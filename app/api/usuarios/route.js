@@ -1,54 +1,50 @@
 import { NextResponse } from 'next/server';
-import { conManejo } from '../../../lib/apiHandler';
-import { requireUsuario } from '../../../lib/requireUsuario';
-import { tienePermisoAccesos, tienePermisoGestionarAdmins } from '../../../lib/permisos';
-import { listarUsuarios, crearUsuario, puedeAsignarRoles, rolesValidos, buscarUsuarioPorEmail } from '../../../lib/gestionUsuarios';
-import { leerHistorialCompleto } from '../../../lib/datosHistorial';
-import { registrarAccion } from '../../../lib/auditoria';
+import { conManejo } from '../../../../lib/apiHandler';
+import { requireUsuario } from '../../../../lib/requireUsuario';
+import { tienePermisoAccesos, tienePermisoGestionarAdmins } from '../../../../lib/permisos';
+import { actualizarUsuario, puedeAsignarRoles, rolesValidos, buscarUsuarioPorEmail } from '../../../../lib/gestionUsuarios';
+import { registrarAccion } from '../../../../lib/auditoria';
 
-export const GET = conManejo(async (request) => {
+export const PATCH = conManejo(async (request, { params }) => {
   const actor = await requireUsuario(request);
   if (!actor) return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
   if (!tienePermisoAccesos(actor)) return NextResponse.json({ error: 'Sin permiso' }, { status: 403 });
 
-  const [usuarios, historial] = await Promise.all([listarUsuarios(), leerHistorialCompleto()]);
+  const email = decodeURIComponent(params.email);
+  const objetivo = await buscarUsuarioPorEmail(email);
+  if (!objetivo) return NextResponse.json({ error: 'No existe ese usuario.' }, { status: 404 });
 
-  const conUltimoLogin = usuarios.map((u) => {
-    const ultimo = historial.find((h) => h.accion === 'Inició sesión' && h.email?.toLowerCase() === u.email?.toLowerCase());
-    return { ...u, ultimoLogin: ultimo ? ultimo.fecha : '' };
-  });
-
-  return NextResponse.json({ usuarios: conUltimoLogin });
-})
-
-export const POST = conManejo(async (request) => {
-  const actor = await requireUsuario(request);
-  if (!actor) return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
-  if (!tienePermisoAccesos(actor)) return NextResponse.json({ error: 'Sin permiso' }, { status: 403 });
-
+  const rolesActuales = (objetivo.Roles || '').split(/[,+]/).map((r) => r.trim()).filter(Boolean);
   const body = await request.json();
-  const { email, nombre, roles, password } = body;
+  const { roles, activo, nuevaPassword } = body;
 
-  if (!email || !nombre || !rolesValidos(roles)) {
-    return NextResponse.json({ error: 'Faltan datos o los roles no son válidos.' }, { status: 400 });
-  }
-  if (password && password.length < 8) {
-    return NextResponse.json({ error: 'La contraseña debe tener al menos 8 caracteres.' }, { status: 400 });
-  }
-  if (!puedeAsignarRoles(actor, roles, tienePermisoGestionarAdmins)) {
+  const rolesAEvaluar = roles && rolesValidos(roles) ? roles : rolesActuales;
+  if (!puedeAsignarRoles(actor, [...rolesActuales, ...rolesAEvaluar], tienePermisoGestionarAdmins)) {
     return NextResponse.json(
-      { error: 'Solo un SuperAdmin puede crear usuarios con rol SuperAdmin.' },
+      { error: 'Solo un SuperAdmin puede modificar a otro usuario SuperAdmin.' },
       { status: 403 }
     );
   }
-
-  const existente = await buscarUsuarioPorEmail(email);
-  if (existente) {
-    return NextResponse.json({ error: 'Ese email ya existe en Usuarios.' }, { status: 409 });
+  if (roles && !rolesValidos(roles)) {
+    return NextResponse.json({ error: 'Roles no válidos.' }, { status: 400 });
+  }
+  if (nuevaPassword && nuevaPassword.length < 8) {
+    return NextResponse.json({ error: 'La nueva contraseña debe tener al menos 8 caracteres.' }, { status: 400 });
   }
 
-  await crearUsuario({ email, nombre, roles, password });
-  await registrarAccion(actor.email, actor.nombre, 'Creó usuario', `${email} (${roles.join(', ')})${password ? ' — con contraseña asignada' : ''}`);
+  const cambios = {};
+  if (roles) cambios.roles = roles;
+  if (typeof activo === 'boolean') cambios.activo = activo;
+  if (nuevaPassword) cambios.nuevaPassword = nuevaPassword;
+
+  await actualizarUsuario(objetivo._rowIndex, cambios);
+
+  const detalle = [
+    roles ? `roles → ${roles.join(', ')}` : null,
+    typeof activo === 'boolean' ? (activo ? 'reactivado' : 'desactivado') : null,
+    nuevaPassword ? 'contraseña reseteada' : null
+  ].filter(Boolean).join(' · ');
+  await registrarAccion(actor.email, actor.nombre, 'Editó usuario', `${email}: ${detalle}`);
 
   return NextResponse.json({ ok: true });
 })
