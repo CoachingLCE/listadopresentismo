@@ -4,6 +4,7 @@ import { requireUsuario } from '../../../lib/requireUsuario';
 import { tienePermisoCargarAsistencia, esRolLimitadoAEdicionesPropias } from '../../../lib/permisos';
 import { guardarPresentismo } from '../../../lib/datosPresentismo';
 import { buscarEdicion } from '../../../lib/datosEdiciones';
+import { buscarEstudiante, actualizarEstudiante } from '../../../lib/datosEstudiantes';
 import { registrarAccion } from '../../../lib/auditoria';
 
 function puedeOperarEdicion(usuario, edicion) {
@@ -28,6 +29,19 @@ export const POST = conManejo(async (request) => {
   if (!puedeOperarEdicion(usuario, edicion)) return NextResponse.json({ error: 'Sin permiso sobre esta edición.' }, { status: 403 });
 
   await guardarPresentismo({ estudianteId, claseId, edicionId, estado, notas, modificadoPor: usuario.email });
+
+  // Marcar "Baja" o "Asincrónico" en una clase puntual también actualiza el Estado
+  // general del estudiante — antes había que ir a cambiarlo a mano aparte, y quedaba
+  // desactualizado. Una vez en "Baja" no se pisa con un "Asinc" posterior (la baja manda).
+  if (estado === 'Baja' || estado === 'Asinc') {
+    const estudiante = await buscarEstudiante(estudianteId);
+    if (estudiante && estudiante.estado !== 'Baja') {
+      const nuevoEstado = estado === 'Baja' ? 'Baja' : 'Asincronico';
+      if (estudiante.estado !== nuevoEstado) {
+        await actualizarEstudiante(estudiante._rowIndex, { estado: nuevoEstado });
+      }
+    }
+  }
 
   return NextResponse.json({ ok: true });
 })

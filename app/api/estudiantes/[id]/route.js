@@ -12,6 +12,21 @@ function puedeOperarEdicion(usuario, edicion) {
   return edicion.docenteEmail === email || edicion.staffEmail === email;
 }
 
+// GET /api/estudiantes/[id] -> { estudiante, edicion } — usado por /seguimiento para
+// mostrar el nombre del estudiante (y su edición) como título de la hoja.
+export const GET = conManejo(async (request, { params }) => {
+  const usuario = await requireUsuario(request);
+  if (!usuario) return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+
+  const estudiante = await buscarEstudiante(params.id);
+  if (!estudiante) return NextResponse.json({ error: 'No existe ese estudiante.' }, { status: 404 });
+
+  const edicion = await buscarEdicion(estudiante.edicionId);
+  if (edicion && !puedeOperarEdicion(usuario, edicion)) return NextResponse.json({ error: 'Sin permiso' }, { status: 403 });
+
+  return NextResponse.json({ estudiante, edicion });
+})
+
 // PATCH /api/estudiantes/[id] -> { estado, observaciones }
 export const PATCH = conManejo(async (request, { params }) => {
   const usuario = await requireUsuario(request);

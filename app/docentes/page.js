@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from '../../lib/useSession';
-import { tienePermisoGestionAcademica, tienePermisoGestionRosterDocentes } from '../../lib/permisos';
+import { tienePermisoGestionAcademica, tienePermisoGestionRosterDocentes, esSuperAdmin } from '../../lib/permisos';
 import { CURSOS } from '../../lib/cursosLogic';
 
 const ROLES_ROSTER = ['Docente', 'Staff'];
@@ -66,9 +66,11 @@ export default function DocentesPage() {
   const [email, setEmail] = useState('');
   const [cursos, setCursos] = useState([]);
   const [roles, setRoles] = useState(['Docente']);
+  const [usuariosConAcceso, setUsuariosConAcceso] = useState([]);
 
   const gestion = usuario ? tienePermisoGestionAcademica(usuario) : false;
   const puedeRoster = usuario ? tienePermisoGestionRosterDocentes(usuario) : false;
+  const superAdmin = usuario ? esSuperAdmin(usuario) : false;
 
   useEffect(() => {
     if (!cargando && (!usuario || !gestion)) router.push('/ediciones');
@@ -77,6 +79,41 @@ export default function DocentesPage() {
   useEffect(() => {
     if (usuario && gestion) cargarDocentes();
   }, [usuario]);
+
+  useEffect(() => {
+    if (usuario && superAdmin) cargarAccesos();
+  }, [usuario, superAdmin]);
+
+  async function cargarAccesos() {
+    try {
+      const res = await fetchAutenticado('/api/usuarios');
+      const data = await res.json();
+      if (res.ok) setUsuariosConAcceso(data.usuarios);
+    } catch {}
+  }
+
+  // Crea o actualiza la contraseña de acceso al sistema para una persona del roster,
+  // directamente desde acá — antes había que ir a Accesos y cargar todo de nuevo a mano.
+  async function crearOActualizarAcceso(docente, password) {
+    setError(''); setMensaje('');
+    const yaExiste = usuariosConAcceso.some((u) => u.email.toLowerCase() === docente.email.toLowerCase());
+    try {
+      const res = yaExiste
+        ? await fetchAutenticado(`/api/usuarios/${encodeURIComponent(docente.email)}`, {
+            method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nuevaPassword: password })
+          })
+        : await fetchAutenticado('/api/usuarios', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: docente.email, nombre: docente.nombre, roles: docente.roles || ['Docente'], password })
+          });
+      const data = await res.json();
+      if (!res.ok) { setError(data.error); return; }
+      setMensaje(yaExiste ? `Contraseña actualizada para ${docente.nombre}.` : `Se creó el acceso al sistema para ${docente.nombre}.`);
+      cargarAccesos();
+    } catch {
+      setError('Error de conexión.');
+    }
+  }
 
   async function cargarDocentes() {
     setCargandoLista(true);
@@ -137,10 +174,17 @@ export default function DocentesPage() {
     }
   }
 
+  const nombreDuplicado = useMemo(() => {
+    const q = nombre.trim().toLowerCase();
+    if (!q) return false;
+    return docentes.some((d) => d.nombre.trim().toLowerCase() === q);
+  }, [nombre, docentes]);
+
   const docentesFiltrados = useMemo(() => {
     const q = busqueda.trim().toLowerCase();
-    if (!q) return docentes;
-    return docentes.filter((d) => d.nombre.toLowerCase().includes(q) || d.email.toLowerCase().includes(q));
+    return docentes
+      .filter((d) => !q || d.nombre.toLowerCase().includes(q) || d.email.toLowerCase().includes(q))
+      .sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
   }, [docentes, busqueda]);
 
   if (cargando || !usuario || !gestion) return null;
@@ -148,10 +192,10 @@ export default function DocentesPage() {
   return (
     <div className="max-w-[960px] mx-auto px-6 pb-16 pt-10">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold tracking-tight mb-1">Docentes y Staff</h1>
+        <h1 className="text-2xl font-bold tracking-tight mb-1">Equipo docente</h1>
         <p className="text-textSec text-sm">
-          Roster de personas disponibles para asignar a ediciones.
-          {!puedeRoster && ' Solo Coordinación y SuperAdmin pueden agregar o dar de baja personas del roster.'}
+          Listado de personas disponibles para asignar a ediciones.
+          {!puedeRoster && ' Solo Coordinación y SuperAdmin pueden agregar o dar de baja personas del listado.'}
         </p>
       </div>
 
@@ -171,7 +215,13 @@ export default function DocentesPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className={labelCls}>Nombre</label>
-                <input required placeholder="Nombre y apellido" value={nombre} onChange={(e) => setNombre(e.target.value)} className={inputCls} />
+                <input
+                  required placeholder="Nombre y apellido" value={nombre} onChange={(e) => setNombre(e.target.value)}
+                  className={nombreDuplicado ? inputCls.replace('border-border', 'border-warningText') : inputCls}
+                />
+                {nombreDuplicado && (
+                  <p className="text-warningText text-[11px] mt-1">⚠ Ya existe alguien con ese nombre en el listado — duplicado.</p>
+                )}
               </div>
               <div>
                 <label className={labelCls}>Email</label>
@@ -207,7 +257,7 @@ export default function DocentesPage() {
       )}
 
       <div className="flex items-center justify-between gap-3 flex-wrap mb-4">
-        <h2 className="text-sm font-semibold text-textSec">Roster <span className="text-text">({docentesFiltrados.length})</span></h2>
+        <h2 className="text-sm font-semibold text-textSec">Listado <span className="text-text">({docentesFiltrados.length})</span></h2>
         <input
           value={busqueda} onChange={(e) => setBusqueda(e.target.value)}
           placeholder="Buscar por nombre o email…"
@@ -222,7 +272,12 @@ export default function DocentesPage() {
       ) : (
         <div className="flex flex-col gap-3">
           {docentesFiltrados.map((d) => (
-            <FilaDocente key={d.email} d={d} puedeRoster={puedeRoster} onActualizar={actualizar} />
+            <FilaDocente
+              key={d.email} d={d} puedeRoster={puedeRoster} onActualizar={actualizar}
+              superAdmin={superAdmin}
+              tieneAcceso={usuariosConAcceso.some((u) => u.email.toLowerCase() === d.email.toLowerCase())}
+              onCrearAcceso={(password) => crearOActualizarAcceso(d, password)}
+            />
           ))}
         </div>
       )}
@@ -230,9 +285,12 @@ export default function DocentesPage() {
   );
 }
 
-function FilaDocente({ d, puedeRoster, onActualizar }) {
+function FilaDocente({ d, puedeRoster, onActualizar, superAdmin, tieneAcceso, onCrearAcceso }) {
+  const [abierto, setAbierto] = useState(false);
   const [cursos, setCursos] = useState(d.cursos);
   const [roles, setRoles] = useState(d.roles || ['Docente']);
+  const [password, setPassword] = useState('');
+  const [verPassword, setVerPassword] = useState(false);
   const huboCambiosCursos = cursos.length !== d.cursos.length || cursos.some((c) => !d.cursos.includes(c));
   const rolesActuales = d.roles || ['Docente'];
   const huboCambiosRoles = roles.length !== rolesActuales.length || roles.some((r) => !rolesActuales.includes(r));
@@ -252,7 +310,7 @@ function FilaDocente({ d, puedeRoster, onActualizar }) {
 
   return (
     <div className="bg-surface2 border border-border rounded-2xl p-4 sm:p-5 transition-colors hover:border-accentTeal/40">
-      <div className="flex items-start gap-3.5 flex-wrap sm:flex-nowrap">
+      <button type="button" onClick={() => setAbierto((v) => !v)} className="w-full flex items-start gap-3.5 flex-wrap sm:flex-nowrap text-left">
         <span className={`w-11 h-11 rounded-full flex items-center justify-center text-sm font-bold shrink-0 ${estiloAvatar(d.email)}`}>
           {iniciales(d.nombre)}
         </span>
@@ -266,9 +324,15 @@ function FilaDocente({ d, puedeRoster, onActualizar }) {
               </span>
             ))}
           </div>
-          <p className="text-textMuted text-xs mt-0.5">{d.email}</p>
+        </div>
 
-          <div className="mt-3">
+        <span className="text-textMuted text-xs shrink-0 self-center">{abierto ? '▲' : '▼'}</span>
+      </button>
+
+      {abierto && (
+        <div className="mt-3.5 pl-0 sm:pl-[58px]">
+          <p className="text-textMuted text-xs mb-2">{d.email}</p>
+          <div className="mt-1">
             <p className="text-[10.5px] text-textMuted font-medium mb-1">Rol</p>
             <div className="flex gap-1.5 flex-wrap">
               {ROLES_ROSTER.map((r) => (
@@ -289,21 +353,56 @@ function FilaDocente({ d, puedeRoster, onActualizar }) {
               ))}
             </div>
           </div>
-        </div>
 
-        {puedeRoster && (
-          <div className="flex gap-2 shrink-0 w-full sm:w-auto justify-end mt-3 sm:mt-0">
-            <button
-              className={`${btnSecCls} ${huboCambios ? 'border-accentTeal text-text' : 'opacity-60'}`}
-              disabled={!huboCambios}
-              onClick={() => onActualizar(d.email, { cursos, roles })}
-            >
-              Guardar cambios
-            </button>
-            <button className={btnDangerCls} onClick={() => onActualizar(d.email, { activo: false })}>Dar de baja</button>
-          </div>
-        )}
-      </div>
+          {puedeRoster && (
+            <div className="flex gap-2 mt-3.5">
+              <button
+                className={`${btnSecCls} ${huboCambios ? 'border-accentTeal text-text' : 'opacity-60'}`}
+                disabled={!huboCambios}
+                onClick={() => onActualizar(d.email, { cursos, roles })}
+              >
+                Guardar cambios
+              </button>
+              <button className={btnDangerCls} onClick={() => onActualizar(d.email, { activo: false })}>Dar de baja</button>
+            </div>
+          )}
+
+          {superAdmin && (
+            <div className="mt-3.5 pt-3.5 border-t border-border">
+              <p className="text-[10.5px] text-textMuted font-medium mb-1.5">
+                Acceso al sistema <span className={tieneAcceso ? 'text-successText' : 'text-textMuted'}>{tieneAcceso ? '· ya tiene acceso' : '· sin acceso todavía'}</span>
+              </p>
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="relative">
+                  <input
+                    type={verPassword ? 'text' : 'password'}
+                    placeholder={tieneAcceso ? 'Nueva contraseña (min 8)' : 'Contraseña (min 8)'}
+                    value={password} onChange={(e) => setPassword(e.target.value)}
+                    className="bg-bg border border-border rounded-lg pl-2.5 pr-7 py-1.5 text-xs w-48"
+                  />
+                  <button
+                    type="button" onClick={() => setVerPassword((v) => !v)}
+                    title={verPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                    className="absolute right-1.5 top-1/2 -translate-y-1/2 text-textMuted hover:text-text text-xs leading-none"
+                  >
+                    {verPassword ? '🙈' : '👁'}
+                  </button>
+                </div>
+                <button
+                  className={btnSecCls}
+                  disabled={password.length < 8}
+                  onClick={() => { onCrearAcceso(password); setPassword(''); }}
+                >
+                  {tieneAcceso ? 'Cambiar contraseña' : 'Crear acceso'}
+                </button>
+              </div>
+              {password.length > 0 && password.length < 8 && (
+                <p className="text-dangerText text-[11px] mt-1">La contraseña tiene que tener al menos 8 caracteres (le faltan {8 - password.length}).</p>
+              )}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

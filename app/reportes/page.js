@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useSession } from '../../lib/useSession';
 import { tienePermisoVerReportes } from '../../lib/permisos';
 import { CURSOS, nombreCurso, colorCurso } from '../../lib/cursosLogic';
+import { estadoCalculado, LABEL_ESTADO_EDICION, BADGE_ESTADO_EDICION, ESTADOS_EDICION_CALCULADOS } from '../../lib/edicionesEstadoCliente';
 import { BarraPresentesAusentes, BarrasPorEdicion, LineaEvolucion } from '../../components/reportes/Graficos';
 
 const chipCls = (activo) =>
@@ -12,12 +13,6 @@ const chipCls = (activo) =>
       ? 'bg-gradient-to-r from-accentPurple to-accentMagenta text-white border-transparent'
       : 'bg-surface2 border-border text-textSec hover:border-accentTeal'
   }`;
-
-const badgeEstadoEdicion = {
-  Activa: 'bg-successBg text-successText',
-  Finalizada: 'bg-surface text-textMuted',
-  Suspendida: 'bg-warningBg text-warningText'
-};
 
 const FILTROS_VACIOS = { cursos: [], docente: '', estado: '', desde: '', hasta: '' };
 
@@ -102,7 +97,7 @@ export default function ReportesPage() {
     let r = filas;
     if (aplicados.cursos.length > 0) r = r.filter((f) => aplicados.cursos.includes(f.edicion.curso));
     if (aplicados.docente) r = r.filter((f) => f.edicion.docenteNombre === aplicados.docente);
-    if (aplicados.estado) r = r.filter((f) => f.edicion.estado === aplicados.estado);
+    if (aplicados.estado) r = r.filter((f) => estadoCalculado(f.edicion) === aplicados.estado);
     if (aplicados.desde) r = r.filter((f) => f.edicion.fechaInicio >= aplicados.desde);
     if (aplicados.hasta) r = r.filter((f) => f.edicion.fechaInicio <= aplicados.hasta);
     return [...r].sort((a, b) => {
@@ -180,7 +175,7 @@ export default function ReportesPage() {
       const filasExport = filasFiltradas.map((f) => ({
         Curso: f.edicion.nombreCurso,
         Edición: f.edicion.numero,
-        Estado: f.edicion.estado,
+        Estado: LABEL_ESTADO_EDICION[estadoCalculado(f.edicion)] || f.edicion.estado,
         Docente: f.edicion.docenteNombre || '',
         '% Presentismo': f.resumen.porcentajePresentismo ?? '',
         Presentes: f.resumen.totalPresentes,
@@ -264,7 +259,7 @@ export default function ReportesPage() {
                   className="w-full bg-bg border border-border rounded-lg px-2.5 py-2 text-xs"
                 >
                   <option value="">Todos</option>
-                  {['Activa', 'Finalizada', 'Suspendida'].map((s) => <option key={s} value={s}>{s}</option>)}
+                  {ESTADOS_EDICION_CALCULADOS.map((s) => <option key={s} value={s}>{LABEL_ESTADO_EDICION[s]}</option>)}
                 </select>
               </div>
               <div>
@@ -379,8 +374,8 @@ export default function ReportesPage() {
                             <div className="flex items-center gap-2">
                               <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${color.dot}`} />
                               <span>{f.edicion.nombreCurso} — Ed. {f.edicion.numero}</span>
-                              <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-semibold shrink-0 ${badgeEstadoEdicion[f.edicion.estado] || 'bg-surface text-textMuted'}`}>
-                                {f.edicion.estado}
+                              <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-semibold shrink-0 ${BADGE_ESTADO_EDICION[estadoCalculado(f.edicion)] || 'bg-surface text-textMuted'}`}>
+                                {LABEL_ESTADO_EDICION[estadoCalculado(f.edicion)] || f.edicion.estado}
                               </span>
                             </div>
                           </td>

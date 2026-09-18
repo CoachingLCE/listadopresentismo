@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useSession } from '../../lib/useSession';
 import { nombreCurso } from '../../lib/cursosLogic';
 import { ESTADOS_PRESENTISMO, COLOR_PRESENTISMO } from '../../lib/presentismoCalculo';
+import { estadoCalculado } from '../../lib/edicionesEstadoCliente';
 
 export default function CargaPage() {
   const { usuario, cargando, fetchAutenticado } = useSession();
@@ -40,7 +41,7 @@ export default function CargaPage() {
       const res = await fetchAutenticado('/api/ediciones');
       const data = await res.json();
       if (!res.ok) { setError(data.error || 'No se pudo cargar.'); return; }
-      const activas = (data.ediciones || []).filter((e) => e.estado === 'Activa');
+      const activas = (data.ediciones || []).filter((e) => estadoCalculado(e) === 'Activa');
       setEdiciones(activas);
       if (activas.length === 1) setEdicionId(activas[0].id);
     } catch {

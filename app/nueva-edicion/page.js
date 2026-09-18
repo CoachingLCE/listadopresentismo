@@ -155,7 +155,7 @@ export default function NuevaEdicionPage() {
                 className={inputCls}
               >
                 {CURSOS.map((c) => (
-                  <option key={c.codigo} value={c.codigo}>{c.nombre} {c.ondemand ? '(a demanda)' : `(${c.totalClases} clases)`}</option>
+                  <option key={c.codigo} value={c.codigo} className="font-bold">{c.nombre} {c.ondemand ? '(a demanda)' : `(${c.totalClases} clases)`}</option>
                 ))}
               </select>
             </Campo>

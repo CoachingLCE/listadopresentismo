@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 import { conManejo } from '../../../../lib/apiHandler';
 import { requireUsuario } from '../../../../lib/requireUsuario';
-import { tienePermisoGestionAcademica, esRolLimitadoAEdicionesPropias } from '../../../../lib/permisos';
-import { buscarEdicion, actualizarEdicion, leerClasesDeEdicion } from '../../../../lib/datosEdiciones';
+import { tienePermisoGestionAcademica, esRolLimitadoAEdicionesPropias, esSuperAdmin } from '../../../../lib/permisos';
+import { buscarEdicion, actualizarEdicion, leerClasesDeEdicion, borrarEdicion } from '../../../../lib/datosEdiciones';
 import { leerEstudiantesDeEdicion } from '../../../../lib/datosEstudiantes';
 import { leerPresentismoDeEdicion } from '../../../../lib/datosPresentismo';
 import { leerDocentesCombinados } from '../../../../lib/datosDocentes';
@@ -71,6 +71,22 @@ export const PATCH = conManejo(async (request, { params }) => {
 
   await actualizarEdicion(edicion._rowIndex, cambios);
   await registrarAccion(usuario.email, usuario.nombre, 'Editó edición', `${edicion.curso} #${edicion.numero}: ${detalle.join(' · ')}`);
+
+  return NextResponse.json({ ok: true });
+})
+
+// DELETE /api/ediciones/[id] -> borra la edición y todo lo que le pertenece (clases,
+// estudiantes, presentismo). Reservado a SuperAdmin — es irreversible.
+export const DELETE = conManejo(async (request, { params }) => {
+  const usuario = await requireUsuario(request);
+  if (!usuario) return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+  if (!esSuperAdmin(usuario)) return NextResponse.json({ error: 'Solo SuperAdmin puede borrar una edición.' }, { status: 403 });
+
+  const edicion = await buscarEdicion(params.id);
+  if (!edicion) return NextResponse.json({ error: 'No existe esa edición.' }, { status: 404 });
+
+  await borrarEdicion(edicion.id);
+  await registrarAccion(usuario.email, usuario.nombre, 'Borró edición', `${edicion.curso} #${edicion.numero}`);
 
   return NextResponse.json({ ok: true });
 })

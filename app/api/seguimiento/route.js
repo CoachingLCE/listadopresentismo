@@ -18,17 +18,19 @@ export const GET = conManejo(async (request) => {
   return NextResponse.json({ seguimientos });
 })
 
-// POST /api/seguimiento -> { estudianteId, edicionId, area, motivo, observaciones }
+// POST /api/seguimiento -> { estudianteId, edicionId, motivo, observaciones }
+// El "área"/responsable ya no se elige a mano: queda registrada automáticamente como la
+// persona logueada que carga el registro (usuario.nombre).
 export const POST = conManejo(async (request) => {
   const usuario = await requireUsuario(request);
   if (!usuario) return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
   if (!tienePermisoGestionAcademica(usuario)) return NextResponse.json({ error: 'Sin permiso' }, { status: 403 });
 
-  const { estudianteId, edicionId, area, motivo, observaciones } = await request.json();
-  if (!area || !motivo) return NextResponse.json({ error: 'Faltan datos.' }, { status: 400 });
+  const { estudianteId, edicionId, motivo, observaciones } = await request.json();
+  if (!motivo) return NextResponse.json({ error: 'Faltan datos.' }, { status: 400 });
 
-  const id = await agregarSeguimiento({ estudianteId, edicionId, area, motivo, responsable: usuario.nombre, observaciones });
-  await registrarAccion(usuario.email, usuario.nombre, 'Registró seguimiento', `${motivo} (${area})`);
+  const id = await agregarSeguimiento({ estudianteId, edicionId, motivo, responsable: usuario.nombre, observaciones });
+  await registrarAccion(usuario.email, usuario.nombre, 'Registró seguimiento', motivo);
 
   return NextResponse.json({ ok: true, id });
 })

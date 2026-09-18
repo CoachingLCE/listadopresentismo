@@ -3,16 +3,9 @@ import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useSession } from '../../lib/useSession';
-import { tienePermisoGestionAcademica } from '../../lib/permisos';
+import { tienePermisoGestionAcademica, esSuperAdmin } from '../../lib/permisos';
 import { nombreCurso, colorCurso } from '../../lib/cursosLogic';
-
-// Estado de la edición — un concepto totalmente distinto al color del curso: acá el
-// color siempre significa lo mismo (verde = activa) sin importar qué se esté cursando.
-const badgeEstado = {
-  Activa: 'bg-successBg text-successText',
-  Finalizada: 'bg-surface text-textMuted',
-  Suspendida: 'bg-warningBg text-warningText'
-};
+import { estadoCalculado, LABEL_ESTADO_EDICION, BADGE_ESTADO_EDICION } from '../../lib/edicionesEstadoCliente';
 
 export default function EdicionesPage() {
   const { usuario, cargando, fetchAutenticado } = useSession();
@@ -23,8 +16,10 @@ export default function EdicionesPage() {
   const [filtro, setFiltro] = useState('');
   const [soloActivas, setSoloActivas] = useState(true);
   const [cargandoEjemplo, setCargandoEjemplo] = useState(false);
+  const [borrandoId, setBorrandoId] = useState('');
 
   const gestion = tienePermisoGestionAcademica(usuario);
+  const superAdmin = esSuperAdmin(usuario);
 
   useEffect(() => {
     if (!cargando && !usuario) router.push('/login');
@@ -49,6 +44,27 @@ export default function EdicionesPage() {
     }
   }
 
+  async function borrarEdicion(e, edicion) {
+    e.preventDefault();
+    e.stopPropagation();
+    const confirmado = window.confirm(
+      `¿Borrar definitivamente ${nombreCurso(edicion.curso)} — Edición ${edicion.numero}?\n\nEsto borra también sus clases, estudiantes y presentismo cargado. No se puede deshacer.`
+    );
+    if (!confirmado) return;
+    setBorrandoId(edicion.id);
+    setError('');
+    try {
+      const res = await fetchAutenticado(`/api/ediciones/${edicion.id}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (!res.ok) { setError(data.error || 'No se pudo borrar la edición.'); return; }
+      cargarEdiciones();
+    } catch {
+      setError('Error de conexión.');
+    } finally {
+      setBorrandoId('');
+    }
+  }
+
   async function cargarEjemplo() {
     setCargandoEjemplo(true);
     setError('');
@@ -67,7 +83,7 @@ export default function EdicionesPage() {
   const filtradas = useMemo(() => {
     const q = filtro.trim().toLowerCase();
     return ediciones
-      .filter((e) => !soloActivas || e.estado === 'Activa')
+      .filter((e) => !soloActivas || estadoCalculado(e) === 'Activa')
       .filter((e) => !q || nombreCurso(e.curso).toLowerCase().includes(q) || e.docenteNombre.toLowerCase().includes(q) || e.staffNombre.toLowerCase().includes(q))
       .sort((a, b) => (b.fechaInicio || '').localeCompare(a.fechaInicio || ''));
   }, [ediciones, filtro, soloActivas]);
@@ -128,6 +144,7 @@ export default function EdicionesPage() {
         <div className="flex flex-col gap-2.5">
           {filtradas.map((e) => {
             const color = colorCurso(e.curso);
+            const estado = estadoCalculado(e);
             return (
               <Link
                 key={e.id} href={`/ediciones/${e.id}`}
@@ -148,9 +165,20 @@ export default function EdicionesPage() {
                   </div>
                 </div>
                 <div className="flex items-center gap-3 shrink-0">
-                  <span className={`text-[11px] px-2 py-1 rounded-full font-semibold ${badgeEstado[e.estado] || 'bg-surface text-textMuted'}`}>
-                    {e.estado}
+                  <span className={`text-[11px] px-2 py-1 rounded-full font-semibold ${BADGE_ESTADO_EDICION[estado] || 'bg-surface text-textMuted'}`}>
+                    {LABEL_ESTADO_EDICION[estado] || estado}
                   </span>
+                  {superAdmin && (
+                    <button
+                      type="button"
+                      onClick={(ev) => borrarEdicion(ev, e)}
+                      disabled={borrandoId === e.id}
+                      title="Borrar edición (SuperAdmin)"
+                      className="text-textMuted hover:text-dangerText transition-colors text-sm disabled:opacity-50"
+                    >
+                      {borrandoId === e.id ? '…' : '🗑'}
+                    </button>
+                  )}
                   <span className="text-xs text-accentTeal font-medium opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">Ver edición →</span>
                 </div>
               </Link>

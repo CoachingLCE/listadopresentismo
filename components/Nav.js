@@ -56,7 +56,7 @@ export default function Nav() {
   const links = [
     link('/ediciones', 'Ediciones'),
     gestion && link('/nueva-edicion', 'Nueva edición'),
-    gestion && link('/docentes', 'Docentes'),
+    gestion && link('/docentes', 'Equipo docente'),
     gestion && link('/estudiantes', 'Estudiantes'),
     link('/carga', 'Cargar asistencia'),
     gestion && link('/seguimiento', 'Seguimiento'),
@@ -107,7 +107,7 @@ export default function Nav() {
         </div>
       </div>
 
-      <div className="bg-gradient-to-br from-accentPurple/10 to-accentTeal/5 border border-accentPurple/20 rounded-2xl px-4 py-3 mb-4 flex items-start gap-3">
+      <div className="animacion-iluminar bg-gradient-to-br from-accentPurple/10 to-accentTeal/5 border border-accentPurple/20 rounded-2xl px-4 py-3 mb-4 flex items-start gap-3">
         <span className="w-8 h-8 rounded-full bg-gradient-to-br from-accentPurple to-accentMagenta flex items-center justify-center text-white text-sm shrink-0">🧭</span>
         <div>
           <p className="text-[13px] font-semibold text-text">Acompañamos, observamos e intervenimos.</p>

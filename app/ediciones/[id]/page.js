@@ -8,7 +8,20 @@ import { nombreCurso, colorCurso } from '../../../lib/cursosLogic';
 import { ESTADOS_PRESENTISMO, COLOR_PRESENTISMO, calcularPorcentaje, calcularResumenPresentismo, agruparPresentismoPorClase } from '../../../lib/presentismoCalculo';
 import { calcularAlerta, COLOR_ALERTA, COLOR_ESTADO } from '../../../lib/alertas';
 import { ESTADOS_ESTUDIANTE } from '../../../lib/estudiantesCliente';
+import { estadoCalculado, LABEL_ESTADO_EDICION, BADGE_ESTADO_EDICION } from '../../../lib/edicionesEstadoCliente';
 import { DistribucionEstados, LineaEvolucion } from '../../../components/reportes/Graficos';
+
+// Jerarquía visual de fechas en la grilla: pasadas hace 30+ días (apagado/gris — historial),
+// pasadas hace 1-29 días (tono secundario), hoy (la más destacada, con chip "HOY") y futuras
+// (tono distinto, sutil). Se aplica solo al encabezado de cada columna, no a toda la fila.
+function estiloFechaClase(fechaISO, hoyISO) {
+  if (!fechaISO) return { clase: 'text-textMuted', esHoy: false };
+  const dias = Math.round((new Date(hoyISO + 'T00:00:00') - new Date(fechaISO + 'T00:00:00')) / (24 * 60 * 60 * 1000));
+  if (dias === 0) return { clase: 'text-accentPurple font-bold', esHoy: true, fondo: 'bg-accentPurple/10' };
+  if (dias > 0 && dias < 30) return { clase: 'text-textSec font-medium', esHoy: false };
+  if (dias >= 30) return { clase: 'text-textMuted', esHoy: false };
+  return { clase: 'text-infoText', esHoy: false }; // futura
+}
 
 const inputCls = 'w-full bg-bg border border-border rounded-lg px-2.5 py-2 text-sm';
 const btnCls = 'bg-gradient-to-r from-accentPurple to-accentMagenta text-white rounded-lg px-4 py-2 text-sm font-semibold disabled:opacity-50';
@@ -66,6 +79,7 @@ export default function EdicionDetallePage() {
   const [estudianteAbierto, setEstudianteAbierto] = useState(null);
   const [busqueda, setBusqueda] = useState('');
   const [filtroEstado, setFiltroEstado] = useState('');
+  const [dashboardAbierto, setDashboardAbierto] = useState(true);
 
   const gestion = usuario ? tienePermisoGestionAcademica(usuario) : false;
   const puedeCargar = usuario ? tienePermisoCargarAsistencia(usuario) : false;
@@ -151,6 +165,9 @@ export default function EdicionDetallePage() {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ estudianteId, claseId, edicionId: id, estado })
       });
+      // "Baja" o "Asinc" en una clase actualiza solo el Estado general del estudiante del
+      // lado del servidor — recargamos para que se vea reflejado en la columna Estado.
+      if (estado === 'Baja' || estado === 'Asinc') cargarDetalle();
     } catch {
       setError('No se pudo guardar ese casillero — probá de nuevo.');
     }
@@ -228,15 +245,19 @@ export default function EdicionDetallePage() {
   const { edicion, clases, estudiantes } = datos;
   const color = colorCurso(edicion.curso);
   const hayAsistenciaCargada = (datos.presentismo || []).length > 0;
+  const estado = estadoCalculado(edicion, hoyISO);
 
   return (
-    <div className="max-w-[1300px] mx-auto px-6 pb-16 pt-10">
+    <div className="max-w-[1300px] mx-auto px-6 pb-24 pt-10">
       <Link href="/ediciones" className="text-textMuted text-xs underline">← Volver a ediciones</Link>
       <div className="flex items-center gap-2 mt-1.5 flex-wrap">
         <span className={`text-[10.5px] px-1.5 py-0.5 rounded-full font-semibold ${color.badge}`}>{nombreCurso(edicion.curso)}</span>
         <h1 className="text-xl">Edición {edicion.numero}</h1>
+        <span className={`text-[10.5px] px-1.5 py-0.5 rounded-full font-semibold ${BADGE_ESTADO_EDICION[estado] || 'bg-surface text-textMuted'}`}>
+          {LABEL_ESTADO_EDICION[estado] || estado}
+        </span>
       </div>
-      <p className="text-textSec text-sm mb-5 mt-1">{edicion.fechaInicio} → {edicion.fechaFin} · {clases.length} clases · {edicion.estado}</p>
+      <p className="text-textSec text-sm mb-5 mt-1">{edicion.fechaInicio} → {edicion.fechaFin} · {clases.length} clases</p>
 
       {error && <p className="text-dangerText text-sm mb-3">{error}</p>}
       {mensaje && <p className="text-successText text-sm mb-3">{mensaje}</p>}
@@ -244,10 +265,15 @@ export default function EdicionDetallePage() {
       {/* ---------- Seguimiento de Asistencia ---------- */}
       {estudiantes.length > 0 && (
         <div className="bg-surface2 border border-border rounded-2xl p-4 sm:p-5 mb-6">
-          <h2 className="text-base font-semibold mb-0.5">Seguimiento de Asistencia</h2>
-          <p className="text-textMuted text-xs mb-4">Visualizá rápidamente la asistencia, ausencias y evolución de los estudiantes.</p>
+          <button type="button" onClick={() => setDashboardAbierto((v) => !v)} className="w-full text-left flex items-center justify-between gap-2 group">
+            <div>
+              <h2 className="text-base font-semibold mb-0.5 group-hover:text-accentTeal transition-colors">Seguimiento de Asistencia</h2>
+              <p className="text-textMuted text-xs">Visualizá rápidamente la asistencia, ausencias y evolución de los estudiantes.</p>
+            </div>
+            <span className="text-textMuted text-xs shrink-0">{dashboardAbierto ? '▲ Colapsar' : '▼ Ver'}</span>
+          </button>
 
-          {!hayAsistenciaCargada ? (
+          {dashboardAbierto && (!hayAsistenciaCargada ? (
             <div className="text-center py-8 bg-bg border border-dashed border-border rounded-xl">
               <p className="text-sm font-medium text-textSec mb-1">Todavía no hay registros de asistencia</p>
               <p className="text-xs text-textMuted">Cuando se carguen asistencias, vas a poder ver las métricas y evolución acá.</p>
@@ -299,7 +325,7 @@ export default function EdicionDetallePage() {
                 </div>
               </div>
             </>
-          )}
+          ))}
         </div>
       )}
 
@@ -319,11 +345,20 @@ export default function EdicionDetallePage() {
               {staffDisponible.map((d) => <option key={d.email} value={d.email}>{d.nombre}</option>)}
             </select>
           </div>
-          <div className="min-w-[160px]">
-            <label className="text-xs text-textSec block mb-1">Estado de la edición</label>
-            <select defaultValue={edicion.estado} onChange={(e) => guardarEdicion({ estado: e.target.value })} className={inputCls}>
-              {['Activa', 'Finalizada', 'Suspendida'].map((s) => <option key={s} value={s}>{s}</option>)}
-            </select>
+          <div className="min-w-[200px]">
+            <label className="text-xs text-textSec block mb-1">
+              Estado <span className="text-textMuted font-normal">(se calcula solo según las fechas)</span>
+            </label>
+            <div className="flex items-center gap-2">
+              <span className={`text-[11px] px-2 py-1.5 rounded-lg font-semibold ${BADGE_ESTADO_EDICION[estado] || 'bg-surface text-textMuted'}`}>
+                {LABEL_ESTADO_EDICION[estado] || estado}
+              </span>
+              {estado === 'Suspendida' ? (
+                <button type="button" onClick={() => guardarEdicion({ estado: 'Activa' })} className={btnSecCls}>Reactivar edición</button>
+              ) : (
+                <button type="button" onClick={() => guardarEdicion({ estado: 'Suspendida' })} className={btnSecCls}>Suspender edición</button>
+              )}
+            </div>
           </div>
         </div>
       )}
@@ -342,7 +377,7 @@ export default function EdicionDetallePage() {
       {estudiantes.length === 0 ? (
         <p className="text-textMuted text-sm">Todavía no hay estudiantes cargados en esta edición.</p>
       ) : (
-        <div>
+        <div className="mb-10">
           <div className="flex items-center justify-between flex-wrap gap-3 mb-3">
             <h2 className="text-sm font-semibold">Listado de presentismo</h2>
             <div className="flex items-center gap-2 flex-wrap">
@@ -390,11 +425,18 @@ export default function EdicionDetallePage() {
                   <th className="text-left px-2 py-2.5 border-b border-border min-w-[80px] font-semibold">Estado</th>
                   <th className="text-left px-2 py-2.5 border-b border-border min-w-[80px] font-semibold">Alerta</th>
                   <th className="text-left px-2 py-2.5 border-b border-border min-w-[70px] font-semibold">% Asist.</th>
-                  {clases.map((c) => (
-                    <th key={c.id} className="px-1.5 py-2.5 border-b border-border border-l border-border text-center min-w-[54px] font-normal text-textMuted">
-                      #{c.numero}<br />{c.fecha.slice(5)}
-                    </th>
-                  ))}
+                  {clases.map((c) => {
+                    const est = estiloFechaClase(c.fecha, hoyISO);
+                    return (
+                      <th
+                        key={c.id}
+                        className={`px-1.5 py-2.5 border-b-2 border-l border-border text-center min-w-[54px] font-normal ${est.clase} ${est.esHoy ? `${est.fondo} border-b-accentPurple` : 'border-b-border'}`}
+                      >
+                        #{c.numero}<br />{c.fecha.slice(5)}
+                        {est.esHoy && <><br /><span className="text-[9px] font-bold">HOY</span></>}
+                      </th>
+                    );
+                  })}
                 </tr>
               </thead>
               <tbody>
@@ -449,13 +491,18 @@ export default function EdicionDetallePage() {
                       {clases.map((c) => {
                         const reg = registros.find((r) => r.claseId === c.id);
                         const estado = reg?.estado || '';
+                        // Una vez que el estudiante está en "Baja", no tiene sentido seguir
+                        // completando clases nuevas — se bloquean los casilleros vacíos (los
+                        // que ya tienen una marca cargada se pueden seguir corrigiendo).
+                        const bloqueadoPorBaja = est.estado === 'Baja' && !estado;
                         return (
                           <td key={c.id} className="border-b border-l border-border p-0.5 text-center">
                             <select
-                              disabled={!puedeCargar}
+                              disabled={!puedeCargar || bloqueadoPorBaja}
+                              title={bloqueadoPorBaja ? 'Estudiante dado de baja — no se cargan clases nuevas.' : undefined}
                               value={estado}
                               onChange={(ev) => marcarPresentismo(est.id, c.id, ev.target.value)}
-                              className={`w-full text-[10.5px] rounded px-0.5 py-1 border-0 text-center ${estado ? COLOR_PRESENTISMO[estado] : 'bg-transparent text-textMuted'}`}
+                              className={`w-full text-[10.5px] rounded px-0.5 py-1 border-0 text-center disabled:opacity-40 disabled:cursor-not-allowed ${estado ? COLOR_PRESENTISMO[estado] : 'bg-transparent text-textMuted'}`}
                             >
                               <option value="">·</option>
                               {ESTADOS_PRESENTISMO.map((e) => <option key={e} value={e}>{e}</option>)}

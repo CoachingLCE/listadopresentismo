@@ -1,23 +1,29 @@
 'use client';
 import { useState } from 'react';
 import { usePathname } from 'next/navigation';
+import { useSession } from '../lib/useSession';
+import { tienePermisoVerReportes } from '../lib/permisos';
 import { APP_VERSION, APP_UPDATED_AT } from '../lib/version';
 import { CHANGELOG } from '../lib/changelog';
 
+// Visible solo para SuperAdmin, Coordinación y Académico (el mismo grupo "de gestión" que
+// ya usa tienePermisoVerReportes) — el resto de los roles no ve el badge de novedades.
 export default function VersionBadge() {
   const pathname = usePathname();
+  const { usuario } = useSession();
   const [abierto, setAbierto] = useState(false);
   const fecha = new Date(APP_UPDATED_AT + 'T00:00:00').toLocaleDateString('es-AR', {
     day: '2-digit', month: '2-digit', year: 'numeric'
   });
 
   if (pathname === '/login' || pathname === '/setup-password') return null;
+  if (!usuario || !tienePermisoVerReportes(usuario)) return null;
 
   return (
     <>
       <button
         onClick={() => setAbierto(true)}
-        className="fixed bottom-3 left-4 text-[11px] text-textMuted bg-surface2/80 border border-border rounded-full px-3 py-1 z-40 hover:text-text hover:border-accentTeal transition-colors"
+        className="fixed bottom-20 right-5 text-[11px] text-textMuted bg-surface2/90 border border-border rounded-full px-3 py-1 z-40 hover:text-text hover:border-accentTeal transition-colors"
         title="Ver novedades"
       >
         v{APP_VERSION} · Actualizado {fecha}
