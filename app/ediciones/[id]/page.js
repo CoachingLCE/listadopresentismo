@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useSession } from '../../../lib/useSession';
 import { tienePermisoGestionAcademica, tienePermisoCargarAsistencia, tienePermisoEscribirNotasEstudiante, esRolLimitadoAEdicionesPropias } from '../../../lib/permisos';
 import { nombreCurso } from '../../../lib/cursosLogic';
-import { ESTADOS_PRESENTISMO, COLOR_PRESENTISMO, calcularPorcentaje } from '../../../lib/presentismoCalculo';
+import { ESTADOS_PRESENTISMO, COLOR_PRESENTISMO, calcularPorcentaje, calcularResumenPresentismo } from '../../../lib/presentismoCalculo';
 import { calcularAlerta, COLOR_ALERTA, COLOR_ESTADO } from '../../../lib/alertas';
 import { ESTADOS_ESTUDIANTE } from '../../../lib/estudiantesCliente';
 
@@ -142,6 +142,11 @@ export default function EdicionDetallePage() {
     [datos, docentes]
   );
 
+  const resumen = useMemo(
+    () => (datos ? calcularResumenPresentismo(datos.estudiantes, datos.presentismo, clasesDadas) : null),
+    [datos, clasesDadas]
+  );
+
   if (cargando || !usuario || cargandoDatos) return <div className="max-w-[1300px] mx-auto px-6 pt-10 text-textSec text-sm">Cargando…</div>;
   if (error && !datos) return <div className="max-w-[1300px] mx-auto px-6 pt-10 text-dangerText text-sm">{error}</div>;
   if (!datos) return null;
@@ -156,6 +161,27 @@ export default function EdicionDetallePage() {
 
       {error && <p className="text-dangerText text-sm mb-3">{error}</p>}
       {mensaje && <p className="text-successText text-sm mb-3">{mensaje}</p>}
+
+      {resumen && estudiantes.length > 0 && (
+        <div className="bg-surface2 border border-border rounded-2xl p-4 mb-6">
+          <h2 className="text-sm font-semibold mb-3 text-center bg-infoBg text-infoText rounded-lg py-1.5">Seguimiento de Asistencia</h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-1.5 text-sm mb-3">
+            <p className="text-textSec">Total Presentes</p><p className="font-semibold text-successText">{resumen.totalPresentes}</p>
+            <p className="text-textSec">Total Ausentes</p><p className="font-semibold text-dangerText">{resumen.totalAusentes}</p>
+            <p className="text-textSec">Total Ausentes justificados</p><p className="font-semibold text-warningText">{resumen.totalAusentesJustificados}</p>
+            <p className="text-textSec">Total de asincrónicos</p><p className="font-semibold text-infoText">{resumen.totalAsincronicos}</p>
+            <p className="text-textSec">CC</p><p className="font-semibold text-textMuted">{resumen.totalCC}</p>
+            <p className="text-textSec">Bajas</p><p className="font-semibold text-textMuted">{resumen.totalBajasClase}</p>
+          </div>
+          <div className="flex flex-wrap gap-2.5 pt-2 border-t border-border">
+            <span className="text-xs bg-bg border border-border rounded-lg px-2.5 py-1.5">Cantidad de estudiantes: <strong>{resumen.cantidadEstudiantes}</strong></span>
+            <span className="text-xs bg-dangerBg text-dangerText rounded-lg px-2.5 py-1.5">Porcentaje de bajas: <strong>{resumen.porcentajeBajas}%</strong></span>
+            <span className="text-xs bg-successBg text-successText rounded-lg px-2.5 py-1.5">
+              Porcentaje de presentismo: <strong>{resumen.porcentajePresentismo === null ? '—' : `${resumen.porcentajePresentismo}%`}</strong>
+            </span>
+          </div>
+        </div>
+      )}
 
       {gestion && (
         <div className="bg-surface2 border border-border rounded-2xl p-4 mb-6 flex flex-wrap gap-4 items-end">

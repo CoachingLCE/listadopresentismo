@@ -20,6 +20,7 @@ export default function EdicionesPage() {
   const [error, setError] = useState('');
   const [filtro, setFiltro] = useState('');
   const [soloActivas, setSoloActivas] = useState(true);
+  const [cargandoEjemplo, setCargandoEjemplo] = useState(false);
 
   const gestion = tienePermisoGestionAcademica(usuario);
 
@@ -46,6 +47,21 @@ export default function EdicionesPage() {
     }
   }
 
+  async function cargarEjemplo() {
+    setCargandoEjemplo(true);
+    setError('');
+    try {
+      const res = await fetchAutenticado('/api/ediciones/ejemplo', { method: 'POST' });
+      const data = await res.json();
+      if (!res.ok) { setError(data.error || 'No se pudo crear la edición de ejemplo.'); return; }
+      router.push(`/ediciones/${data.id}`);
+    } catch {
+      setError('Error de conexión.');
+    } finally {
+      setCargandoEjemplo(false);
+    }
+  }
+
   const filtradas = useMemo(() => {
     const q = filtro.trim().toLowerCase();
     return ediciones
@@ -66,19 +82,22 @@ export default function EdicionesPage() {
           </p>
         </div>
         {gestion && (
-          <Link href="/nueva-edicion" className="bg-gradient-to-r from-accentPurple to-accentMagenta text-white rounded-lg px-4 py-2 text-sm font-semibold h-fit">
-            + Nueva edición
-          </Link>
+          <div className="flex gap-2 flex-wrap h-fit">
+            <button
+              onClick={cargarEjemplo} disabled={cargandoEjemplo}
+              className="bg-transparent text-textSec border border-border rounded-lg px-3 py-2 text-sm font-semibold disabled:opacity-50"
+              title="Crea una edición de Coaching Ontológico con 10 estudiantes de prueba y presentismo ya cargado, para ver cómo se ve la app con datos."
+            >
+              {cargandoEjemplo ? 'Creando…' : '🧪 Cargar edición de ejemplo'}
+            </button>
+            <Link href="/nueva-edicion" data-tour="ediciones-nueva" className="bg-gradient-to-r from-accentPurple to-accentMagenta text-white rounded-lg px-4 py-2 text-sm font-semibold h-fit">
+              + Nueva edición
+            </Link>
+          </div>
         )}
       </div>
 
-      <p className="text-textSec text-sm bg-surface2 border border-border rounded-lg px-4 py-3 mb-5">
-        El listado de presentismo es una herramienta pedagógica que nos permite acompañar de mejor manera a
-        nuestros estudiantes, identificando su participación y pudiendo intervenir oportunamente cuando sea
-        necesario.
-      </p>
-
-      <div className="flex gap-3 mb-5 flex-wrap items-center">
+      <div className="flex gap-3 mb-5 flex-wrap items-center" data-tour="ediciones-buscar">
         <input
           value={filtro} onChange={(e) => setFiltro(e.target.value)}
           placeholder="Buscar por curso o docente…"

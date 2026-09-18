@@ -1,12 +1,13 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useSession } from '../lib/useSession';
-import { tienePermisoGestionAcademica, tienePermisoVerHistorial, tienePermisoAccesos } from '../lib/permisos';
+import { tienePermisoGestionAcademica, tienePermisoVerHistorial, tienePermisoAccesos, tienePermisoVerReportes, puedeVerComoOtro } from '../lib/permisos';
 import ThemeSelector from './ThemeSelector';
 import CambiarPasswordModal from './CambiarPasswordModal';
 import Logo from './Logo';
+import TourGuiado from './TourGuiado';
 
 function link(href, label) {
   return { href, label };
@@ -29,15 +30,28 @@ function itemNav(href, label, pathname) {
 }
 
 export default function Nav() {
-  const { usuario, logout } = useSession();
+  const { usuario, usuarioReal, logout, fetchAutenticado, verComo, entrarVerComo, salirVerComo } = useSession();
   const pathname = usePathname();
   const [cambiandoPassword, setCambiandoPassword] = useState(false);
+  const [personas, setPersonas] = useState([]);
 
-  if (!usuario || pathname === '/login' || pathname === '/setup-password') return null;
+  const puedeVerComo = usuarioReal ? puedeVerComoOtro(usuarioReal) : false;
+
+  useEffect(() => {
+    if (!puedeVerComo) return;
+    fetchAutenticado('/api/personas-vista')
+      .then((res) => res.json())
+      .then((data) => setPersonas(data.personas || []))
+      .catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [puedeVerComo]);
+
+  if (!usuarioReal || pathname === '/login' || pathname === '/setup-password') return null;
 
   const gestion = tienePermisoGestionAcademica(usuario);
   const historial = tienePermisoVerHistorial(usuario);
   const accesos = tienePermisoAccesos(usuario);
+  const reportes = tienePermisoVerReportes(usuario);
 
   const links = [
     link('/ediciones', 'Ediciones'),
@@ -46,23 +60,51 @@ export default function Nav() {
     gestion && link('/estudiantes', 'Estudiantes'),
     link('/carga', 'Cargar asistencia'),
     gestion && link('/seguimiento', 'Seguimiento'),
+    reportes && link('/reportes', 'Reportes'),
     historial && link('/historial', 'Historial'),
     accesos && link('/accesos', 'Accesos')
   ].filter(Boolean);
 
+  function onCambiarVerComo(email) {
+    if (!email) { salirVerComo(); return; }
+    const persona = personas.find((p) => p.email === email);
+    if (persona) entrarVerComo(persona);
+  }
+
   return (
     <div className="max-w-[1440px] mx-auto px-6 pt-4">
       <div className="flex items-center justify-between mb-3 gap-3 flex-wrap">
-        <Link href="/ediciones" className="flex items-center gap-2 shrink-0">
-          <Logo height={28} />
-          <span className="text-sm font-bold text-textMuted">Presentismo</span>
-        </Link>
+        <div className="flex flex-col gap-1 shrink-0 max-w-md">
+          <Link href="/ediciones" className="flex items-center gap-2">
+            <Logo height={28} />
+            <span className="text-sm font-bold text-textMuted">Presentismo</span>
+          </Link>
+          <p className="text-[11px] text-textMuted italic leading-snug">
+            El listado de presentismo es una herramienta pedagógica que nos permite acompañar de mejor manera a
+            nuestros estudiantes, identificando su participación y pudiendo intervenir oportunamente cuando sea
+            necesario.
+          </p>
+        </div>
 
         <div className="flex items-center gap-2 shrink-0">
+          {puedeVerComo && (
+            <select
+              data-tour="nav-ver-como"
+              value={verComo?.email || ''}
+              onChange={(e) => onCambiarVerComo(e.target.value)}
+              className="h-8 bg-surface2 border border-border rounded-lg px-2 text-xs text-textSec max-w-[160px]"
+              title="Previsualizar la app como otra persona (solo lectura)"
+            >
+              <option value="">👁 Ver como…</option>
+              {personas.map((p) => (
+                <option key={p.email} value={p.email}>{p.nombre} ({p.roles.join(', ')})</option>
+              ))}
+            </select>
+          )}
           <ThemeSelector />
-          {usuario && (
+          {usuarioReal && (
             <div className="text-right text-xs leading-tight">
-              <p className="font-semibold">{usuario.nombre}</p>
+              <p className="font-semibold">{usuarioReal.nombre}</p>
               <div className="flex gap-2 justify-end">
                 <button onClick={() => setCambiandoPassword(true)} className="text-textMuted underline">Contraseña</button>
                 <button onClick={logout} className="text-textMuted underline">Salir</button>
@@ -72,11 +114,19 @@ export default function Nav() {
         </div>
       </div>
 
+      {verComo && (
+        <div className="bg-gradient-to-r from-accentPurple to-accentMagenta text-white text-xs font-semibold rounded-lg px-3.5 py-2 mb-3 flex items-center justify-between gap-2 flex-wrap">
+          <span>👁 Viendo como: {verComo.nombre} ({verComo.roles.join(', ')}) — modo solo lectura, no se guarda nada.</span>
+          <button onClick={salirVerComo} className="underline shrink-0">Salir del modo vista</button>
+        </div>
+      )}
+
       <nav className="mb-5 flex items-center gap-1.5 flex-wrap">
         {links.map((l) => itemNav(l.href, l.label, pathname))}
       </nav>
 
       {cambiandoPassword && <CambiarPasswordModal onCerrar={() => setCambiandoPassword(false)} />}
+      <TourGuiado />
     </div>
   );
 }

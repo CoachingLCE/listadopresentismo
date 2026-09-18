@@ -94,7 +94,7 @@ export default function NuevaEdicionPage() {
 
       {error && <p className="text-dangerText text-sm mb-3">{error}</p>}
 
-      <form onSubmit={crear} className="bg-surface2 border border-border rounded-2xl p-5 flex flex-col gap-3.5">
+      <form onSubmit={crear} className="bg-surface2 border border-border rounded-2xl p-5 flex flex-col gap-3.5" data-tour="nueva-edicion-form">
         <div>
           <label className={labelCls}>Curso</label>
           <select value={curso} onChange={(e) => { setCurso(e.target.value); setDocenteEmail(''); setStaffEmail(''); }} className={inputCls}>

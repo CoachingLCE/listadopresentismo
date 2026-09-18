@@ -44,7 +44,7 @@ export default function EstudiantesPage() {
       <h1 className="text-xl mb-1">Estudiantes</h1>
       <p className="text-textSec text-sm mb-5">Buscá un estudiante por nombre en todas las ediciones que podés ver. Para cargar una lista nueva, entrá a la edición correspondiente.</p>
 
-      <form onSubmit={buscar} className="flex gap-2 mb-5">
+      <form onSubmit={buscar} className="flex gap-2 mb-5" data-tour="estudiantes-buscar">
         <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Nombre del estudiante…" className="flex-1 bg-surface2 border border-border rounded-lg px-3 py-2 text-sm" />
         <button type="submit" className="bg-gradient-to-r from-accentPurple to-accentMagenta text-white rounded-lg px-4 py-2 text-sm font-semibold">Buscar</button>
       </form>

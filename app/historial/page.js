@@ -40,7 +40,7 @@ export default function HistorialPage() {
 
   return (
     <div className="max-w-[900px] mx-auto px-6 pb-16 pt-10">
-      <h1 className="text-xl mb-1">Historial</h1>
+      <h1 className="text-xl mb-1" data-tour="historial-titulo">Historial</h1>
       <p className="text-textSec text-sm mb-5">Registro de acciones relevantes de todos los usuarios.</p>
 
       {error && <p className="text-dangerText text-sm mb-3">{error}</p>}

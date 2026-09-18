@@ -102,7 +102,7 @@ export default function CargaPage() {
         <p className="text-textMuted text-sm">No tenés ninguna edición activa asignada.</p>
       ) : (
         <>
-          <div className="grid grid-cols-2 gap-3 mb-5">
+          <div className="grid grid-cols-2 gap-3 mb-5" data-tour="carga-edicion">
             <div>
               <label className="text-xs text-textSec block mb-1">Edición</label>
               <select value={edicionId} onChange={(e) => setEdicionId(e.target.value)} className="w-full bg-surface2 border border-border rounded-lg px-2.5 py-2 text-sm">

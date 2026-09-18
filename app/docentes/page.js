@@ -98,8 +98,8 @@ export default function DocentesPage() {
       {mensaje && <p className="text-successText text-sm mb-3">{mensaje}</p>}
 
       {puedeRoster && (
-        <div className="bg-surface2 border border-border rounded-2xl p-5 mb-6">
-          <h2 className="text-sm font-semibold mb-3">➕ Agregar al roster</h2>
+        <div className="bg-surface2 border border-border rounded-2xl p-5 mb-6" data-tour="docentes-agregar">
+          <h2 className="text-sm font-semibold mb-3">➕ Agregar docente al listado</h2>
           <form onSubmit={agregar} className="grid grid-cols-2 gap-2.5">
             <div>
               <label className="text-xs text-textSec block mb-1">Nombre</label>

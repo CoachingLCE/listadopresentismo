@@ -105,7 +105,7 @@ export default function AccesosPage() {
       {error && <p className="text-dangerText text-sm mb-3">{error}</p>}
       {mensaje && <p className="text-successText text-sm mb-3">{mensaje}</p>}
 
-      <div className="bg-surface2 border border-border rounded-2xl p-5 mb-6">
+      <div className="bg-surface2 border border-border rounded-2xl p-5 mb-6" data-tour="accesos-nuevo">
         <h2 className="text-sm font-semibold mb-3">➕ Nuevo usuario</h2>
         <form onSubmit={crear} className="grid grid-cols-2 gap-2.5">
           <div>

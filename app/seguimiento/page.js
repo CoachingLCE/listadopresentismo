@@ -110,7 +110,7 @@ function SeguimientoContenido() {
       {error && <p className="text-dangerText text-sm mb-3">{error}</p>}
       {mensaje && <p className="text-successText text-sm mb-3">{mensaje}</p>}
 
-      <form onSubmit={crear} className="bg-surface2 border border-border rounded-2xl p-5 mb-6 flex flex-col gap-2.5">
+      <form onSubmit={crear} className="bg-surface2 border border-border rounded-2xl p-5 mb-6 flex flex-col gap-2.5" data-tour="seguimiento-form">
         <h2 className="text-sm font-semibold mb-1">➕ Nuevo registro</h2>
         <div className="grid grid-cols-2 gap-2.5">
           <div>
