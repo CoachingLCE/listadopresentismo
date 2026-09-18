@@ -8,6 +8,7 @@ import ThemeSelector from './ThemeSelector';
 import CambiarPasswordModal from './CambiarPasswordModal';
 import Logo from './Logo';
 import TourGuiado from './TourGuiado';
+import PausaSemanal from './PausaSemanal';
 
 function link(href, label) {
   return { href, label };
@@ -120,6 +121,8 @@ export default function Nav() {
           </p>
         </div>
       </div>
+
+      <PausaSemanal />
 
       {verComo && (
         <div className="bg-gradient-to-r from-accentPurple to-accentMagenta text-white text-xs font-semibold rounded-lg px-3.5 py-2 mb-3 flex items-center justify-between gap-2 flex-wrap">
