@@ -72,6 +72,12 @@ export default function EdicionesPage() {
         )}
       </div>
 
+      <p className="text-textSec text-sm bg-surface2 border border-border rounded-lg px-4 py-3 mb-5">
+        El listado de presentismo es una herramienta pedagógica que nos permite acompañar de mejor manera a
+        nuestros estudiantes, identificando su participación y pudiendo intervenir oportunamente cuando sea
+        necesario.
+      </p>
+
       <div className="flex gap-3 mb-5 flex-wrap items-center">
         <input
           value={filtro} onChange={(e) => setFiltro(e.target.value)}
