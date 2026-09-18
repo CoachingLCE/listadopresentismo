@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useSession } from '../../lib/useSession';
 import { nombreCurso } from '../../lib/cursosLogic';
 import { ESTADOS_PRESENTISMO, COLOR_PRESENTISMO } from '../../lib/presentismoCalculo';
@@ -17,6 +18,7 @@ export default function CargaPage() {
   const [cargandoDetalle, setCargandoDetalle] = useState(false);
   const [error, setError] = useState('');
   const [guardando, setGuardando] = useState({});
+  const [guardadoOk, setGuardadoOk] = useState(false);
 
   useEffect(() => {
     if (!cargando && !usuario) router.push('/login');
@@ -28,6 +30,7 @@ export default function CargaPage() {
 
   useEffect(() => {
     if (edicionId) cargarDetalle(edicionId);
+    setGuardadoOk(false);
   }, [edicionId]);
 
   async function cargarEdiciones() {
@@ -77,6 +80,7 @@ export default function CargaPage() {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ estudianteId, claseId, edicionId, estado })
       });
+      setGuardadoOk(true);
     } catch {
       setError('No se pudo guardar — probá de nuevo.');
     } finally {
@@ -91,7 +95,12 @@ export default function CargaPage() {
 
   return (
     <div className="max-w-[760px] mx-auto px-6 pb-16 pt-10">
-      <h1 className="text-xl mb-1">Cargar asistencia</h1>
+      <div className="flex items-center gap-2.5 flex-wrap mb-1">
+        <h1 className="text-xl">Cargar asistencia</h1>
+        {guardadoOk && (
+          <span className="text-[11px] text-successText bg-successBg rounded-full px-2 py-0.5 font-semibold">✓ Asistencia guardada</span>
+        )}
+      </div>
       <p className="text-textSec text-sm mb-5">Elegí la edición y la clase, y marcá a cada estudiante.</p>
 
       {error && <p className="text-dangerText text-sm mb-3">{error}</p>}
@@ -119,6 +128,19 @@ export default function CargaPage() {
               </div>
             )}
           </div>
+
+          {edicionId && (
+            <Link
+              href={`/ediciones/${edicionId}`}
+              className="flex items-center justify-between gap-3 bg-surface2/60 border border-border rounded-xl px-3.5 py-2.5 mb-5 hover:border-accentTeal/50 transition-colors group"
+            >
+              <div>
+                <p className="text-xs text-textSec font-medium">📊 Información de la edición</p>
+                <p className="text-[11px] text-textMuted">Consultá el seguimiento y los indicadores de esta edición.</p>
+              </div>
+              <span className="text-[11px] text-accentTeal font-medium whitespace-nowrap shrink-0">Ver información →</span>
+            </Link>
+          )}
 
           {cargandoDetalle ? (
             <p className="text-textSec text-sm">Cargando estudiantes…</p>

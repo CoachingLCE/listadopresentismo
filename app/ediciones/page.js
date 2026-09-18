@@ -4,11 +4,13 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useSession } from '../../lib/useSession';
 import { tienePermisoGestionAcademica } from '../../lib/permisos';
-import { nombreCurso } from '../../lib/cursosLogic';
+import { nombreCurso, colorCurso } from '../../lib/cursosLogic';
 
+// Estado de la edición — un concepto totalmente distinto al color del curso: acá el
+// color siempre significa lo mismo (verde = activa) sin importar qué se esté cursando.
 const badgeEstado = {
   Activa: 'bg-successBg text-successText',
-  Finalizada: 'bg-infoBg text-infoText',
+  Finalizada: 'bg-surface text-textMuted',
   Suspendida: 'bg-warningBg text-warningText'
 };
 
@@ -103,10 +105,17 @@ export default function EdicionesPage() {
           placeholder="Buscar por curso o docente…"
           className="bg-surface2 border border-border rounded-lg px-3 py-2 text-sm flex-1 min-w-[220px]"
         />
-        <label className="text-sm flex items-center gap-1.5 text-textSec">
-          <input type="checkbox" checked={soloActivas} onChange={(e) => setSoloActivas(e.target.checked)} />
-          Solo activas
-        </label>
+        <button
+          type="button"
+          onClick={() => setSoloActivas((v) => !v)}
+          className={`h-[38px] text-sm px-3.5 rounded-lg border font-medium transition-colors flex items-center gap-1.5 ${
+            soloActivas
+              ? 'bg-gradient-to-r from-accentPurple to-accentMagenta text-white border-transparent'
+              : 'bg-surface2 border-border text-textSec hover:border-accentTeal'
+          }`}
+        >
+          {soloActivas ? '✓' : ''} Solo activas
+        </button>
       </div>
 
       {error && <p className="text-dangerText text-sm mb-3">{error}</p>}
@@ -117,24 +126,36 @@ export default function EdicionesPage() {
         <p className="text-textMuted text-sm">No hay ediciones para mostrar.</p>
       ) : (
         <div className="flex flex-col gap-2.5">
-          {filtradas.map((e) => (
-            <Link
-              key={e.id} href={`/ediciones/${e.id}`}
-              className="bg-surface2 border border-border rounded-xl p-4 flex justify-between items-center flex-wrap gap-2 hover:border-accentTeal transition-colors"
-            >
-              <div>
-                <p className="font-semibold text-sm">{nombreCurso(e.curso)} — Edición {e.numero}</p>
-                <p className="text-textSec text-xs mt-0.5">
-                  {e.fechaInicio} → {e.fechaFin || '?'} · {e.totalClases} clases
-                  {e.docenteNombre && ` · Docente: ${e.docenteNombre}`}
-                  {e.staffNombre && ` · Staff: ${e.staffNombre}`}
-                </p>
-              </div>
-              <span className={`text-[11px] px-2 py-1 rounded-full font-semibold ${badgeEstado[e.estado] || 'bg-surface text-textMuted'}`}>
-                {e.estado}
-              </span>
-            </Link>
-          ))}
+          {filtradas.map((e) => {
+            const color = colorCurso(e.curso);
+            return (
+              <Link
+                key={e.id} href={`/ediciones/${e.id}`}
+                className={`bg-surface2 border border-border border-l-[3px] ${color.borde} rounded-xl p-4 flex justify-between items-center flex-wrap gap-3 hover:border-accentTeal transition-colors group`}
+              >
+                <div className="flex items-start gap-3 min-w-0">
+                  <span className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${color.dot}`} />
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className={`text-[10.5px] px-1.5 py-0.5 rounded-full font-semibold shrink-0 ${color.badge}`}>{nombreCurso(e.curso)}</span>
+                      <p className="font-semibold text-sm">Edición {e.numero}</p>
+                    </div>
+                    <p className="text-textSec text-xs mt-1">
+                      {e.fechaInicio} → {e.fechaFin || '?'} · {e.totalClases} clases
+                      {e.docenteNombre && ` · Docente: ${e.docenteNombre}`}
+                      {e.staffNombre && ` · Staff: ${e.staffNombre}`}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 shrink-0">
+                  <span className={`text-[11px] px-2 py-1 rounded-full font-semibold ${badgeEstado[e.estado] || 'bg-surface text-textMuted'}`}>
+                    {e.estado}
+                  </span>
+                  <span className="text-xs text-accentTeal font-medium opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">Ver edición →</span>
+                </div>
+              </Link>
+            );
+          })}
         </div>
       )}
     </div>

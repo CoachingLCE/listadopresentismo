@@ -17,7 +17,7 @@ export default function VersionBadge() {
     <>
       <button
         onClick={() => setAbierto(true)}
-        className="fixed bottom-3 right-4 text-[11px] text-textMuted bg-surface2/80 border border-border rounded-full px-3 py-1 z-40 hover:text-text hover:border-accentTeal transition-colors"
+        className="fixed bottom-3 left-4 text-[11px] text-textMuted bg-surface2/80 border border-border rounded-full px-3 py-1 z-40 hover:text-text hover:border-accentTeal transition-colors"
         title="Ver novedades"
       >
         v{APP_VERSION} · Actualizado {fecha}

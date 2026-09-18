@@ -117,12 +117,15 @@ export default function AccesosPage() {
             <input type="text" required value={nuevoNombre} onChange={(e) => setNuevoNombre(e.target.value)} className={inputCls} />
           </div>
           <div className="col-span-2">
-            <label className="text-xs text-textSec block mb-1">Contraseña (opcional)</label>
+            <label className="text-xs text-textSec block mb-1">Contraseña (opcional, mínimo 8 caracteres)</label>
             <input
               type="text" value={nuevoPassword} onChange={(e) => setNuevoPassword(e.target.value)}
               placeholder="Dejala vacía para que la persona la asigne ella misma desde /setup-password"
               className={inputCls}
             />
+            {nuevoPassword.length > 0 && nuevoPassword.length < 8 && (
+              <p className="text-dangerText text-[11px] mt-1">La contraseña tiene que tener al menos 8 caracteres (le faltan {8 - nuevoPassword.length}).</p>
+            )}
           </div>
           <div className="col-span-2">
             <label className="text-xs text-textSec block mb-1.5">Rol</label>
@@ -197,6 +200,7 @@ function rolMasAlto(roles) {
 function FilaUsuario({ u, puedeEditar, onActualizar }) {
   const [rol, setRol] = useState(rolMasAlto(u.roles));
   const [nuevaPassword, setNuevaPassword] = useState('');
+  const [verPassword, setVerPassword] = useState(false);
 
   return (
     <div className="bg-surface2 border border-border rounded-xl p-3.5">
@@ -224,11 +228,25 @@ function FilaUsuario({ u, puedeEditar, onActualizar }) {
           <button className={btnSecCls} onClick={() => onActualizar(u.email, { activo: !u.activo })}>
             {u.activo ? 'Desactivar' : 'Reactivar'}
           </button>
-          <input
-            type="password" placeholder="Nueva contraseña (min 8)" value={nuevaPassword}
-            onChange={(e) => setNuevaPassword(e.target.value)}
-            className="bg-bg border border-border rounded-lg px-2 py-1.5 text-xs w-44"
-          />
+          <div className="flex flex-col gap-1">
+            <div className="relative">
+              <input
+                type={verPassword ? 'text' : 'password'} placeholder="Nueva contraseña (min 8)" value={nuevaPassword}
+                onChange={(e) => setNuevaPassword(e.target.value)}
+                className="bg-bg border border-border rounded-lg pl-2 pr-7 py-1.5 text-xs w-44"
+              />
+              <button
+                type="button" onClick={() => setVerPassword((v) => !v)}
+                title={verPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                className="absolute right-1.5 top-1/2 -translate-y-1/2 text-textMuted hover:text-text text-xs leading-none"
+              >
+                {verPassword ? '🙈' : '👁'}
+              </button>
+            </div>
+            {nuevaPassword.length > 0 && nuevaPassword.length < 8 && (
+              <p className="text-dangerText text-[11px]">La contraseña tiene que tener al menos 8 caracteres (le faltan {8 - nuevaPassword.length}).</p>
+            )}
+          </div>
           <button
             className={btnSecCls}
             onClick={() => { onActualizar(u.email, { nuevaPassword }); setNuevaPassword(''); }}

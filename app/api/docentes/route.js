@@ -14,13 +14,13 @@ export const GET = conManejo(async (request) => {
   return NextResponse.json({ docentes });
 })
 
-// POST /api/docentes -> { nombre, email, cursos } — alta de un docente/staff nuevo al roster.
+// POST /api/docentes -> { nombre, email, cursos, roles } — alta de un docente/staff nuevo al roster.
 export const POST = conManejo(async (request) => {
   const usuario = await requireUsuario(request);
   if (!usuario) return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
   if (!tienePermisoGestionRosterDocentes(usuario)) return NextResponse.json({ error: 'Sin permiso' }, { status: 403 });
 
-  const { nombre, email, cursos } = await request.json();
+  const { nombre, email, cursos, roles } = await request.json();
   if (!nombre || !email) return NextResponse.json({ error: 'Faltan datos.' }, { status: 400 });
 
   const existentes = await leerDocentesCombinados();
@@ -28,8 +28,8 @@ export const POST = conManejo(async (request) => {
     return NextResponse.json({ error: 'Ya hay un docente/staff con ese email.' }, { status: 409 });
   }
 
-  await agregarDocente({ nombre, email, cursos: cursos || [] });
-  await registrarAccion(usuario.email, usuario.nombre, 'Agregó docente/staff', `${nombre} (${email})`);
+  await agregarDocente({ nombre, email, cursos: cursos || [], roles: roles && roles.length > 0 ? roles : ['Docente'] });
+  await registrarAccion(usuario.email, usuario.nombre, 'Agregó docente/staff', `${nombre} (${email}) · rol: ${(roles && roles.length > 0 ? roles : ['Docente']).join(', ')}`);
 
   return NextResponse.json({ ok: true });
 })

@@ -4,14 +4,52 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useSession } from '../../../lib/useSession';
 import { tienePermisoGestionAcademica, tienePermisoCargarAsistencia, tienePermisoEscribirNotasEstudiante, esRolLimitadoAEdicionesPropias } from '../../../lib/permisos';
-import { nombreCurso } from '../../../lib/cursosLogic';
-import { ESTADOS_PRESENTISMO, COLOR_PRESENTISMO, calcularPorcentaje, calcularResumenPresentismo } from '../../../lib/presentismoCalculo';
+import { nombreCurso, colorCurso } from '../../../lib/cursosLogic';
+import { ESTADOS_PRESENTISMO, COLOR_PRESENTISMO, calcularPorcentaje, calcularResumenPresentismo, agruparPresentismoPorClase } from '../../../lib/presentismoCalculo';
 import { calcularAlerta, COLOR_ALERTA, COLOR_ESTADO } from '../../../lib/alertas';
 import { ESTADOS_ESTUDIANTE } from '../../../lib/estudiantesCliente';
+import { DistribucionEstados, LineaEvolucion } from '../../../components/reportes/Graficos';
 
 const inputCls = 'w-full bg-bg border border-border rounded-lg px-2.5 py-2 text-sm';
 const btnCls = 'bg-gradient-to-r from-accentPurple to-accentMagenta text-white rounded-lg px-4 py-2 text-sm font-semibold disabled:opacity-50';
 const btnSecCls = 'bg-transparent text-textSec border border-border rounded-lg px-3 py-1.5 text-xs';
+
+const ICONO_INDICADOR = {
+  totalPresentes: { icono: '🟢', label: 'Presentes', bg: 'bg-successBg', text: 'text-successText' },
+  totalAusentes: { icono: '🔴', label: 'Ausentes', bg: 'bg-dangerBg', text: 'text-dangerText' },
+  totalAusentesJustificados: { icono: '🟡', label: 'Aus. justificados', bg: 'bg-warningBg', text: 'text-warningText' },
+  totalAsincronicos: { icono: '🔵', label: 'Asincrónicos', bg: 'bg-infoBg', text: 'text-infoText' },
+  totalCC: { icono: '🟣', label: 'CC', bg: 'bg-accentMagenta/15', text: 'text-accentMagenta' },
+  totalBajasClase: { icono: '⚫', label: 'Bajas', bg: 'bg-surface', text: 'text-textMuted' }
+};
+
+const FILTROS_ESTADO_ESTUDIANTE = [
+  { valor: '', label: 'Todos', icono: '' },
+  { valor: 'Regular', label: 'Regular', icono: '🟢' },
+  { valor: 'Asincronico', label: 'Asincrónico', icono: '🟡' },
+  { valor: 'Baja', label: 'Baja', icono: '🔴' },
+  { valor: 'CambioEdicion', label: 'Cambio edición', icono: '🔵' }
+];
+
+function AnilloPresentismo({ pct }) {
+  if (pct === null) {
+    return (
+      <div className="w-14 h-14 rounded-full border-4 border-border flex items-center justify-center text-xs text-textMuted font-semibold shrink-0">—</div>
+    );
+  }
+  const color = pct >= 70 ? 'rgb(var(--color-successText))' : 'rgb(var(--color-dangerText))';
+  const circ = 2 * Math.PI * 24;
+  const offset = circ - (pct / 100) * circ;
+  return (
+    <div className="relative w-14 h-14 shrink-0">
+      <svg viewBox="0 0 56 56" className="w-14 h-14 -rotate-90">
+        <circle cx="28" cy="28" r="24" fill="none" stroke="rgb(var(--color-border))" strokeWidth="5" />
+        <circle cx="28" cy="28" r="24" fill="none" stroke={color} strokeWidth="5" strokeDasharray={circ} strokeDashoffset={offset} strokeLinecap="round" />
+      </svg>
+      <div className="absolute inset-0 flex items-center justify-center text-[12px] font-bold">{pct}%</div>
+    </div>
+  );
+}
 
 export default function EdicionDetallePage() {
   const { id } = useParams();
@@ -26,6 +64,8 @@ export default function EdicionDetallePage() {
   const [textoBulk, setTextoBulk] = useState('');
   const [cargandoBulk, setCargandoBulk] = useState(false);
   const [estudianteAbierto, setEstudianteAbierto] = useState(null);
+  const [busqueda, setBusqueda] = useState('');
+  const [filtroEstado, setFiltroEstado] = useState('');
 
   const gestion = usuario ? tienePermisoGestionAcademica(usuario) : false;
   const puedeCargar = usuario ? tienePermisoCargarAsistencia(usuario) : false;
@@ -137,9 +177,15 @@ export default function EdicionDetallePage() {
     return (datos?.presentismo || []).filter((p) => p.estudianteId === estudianteId);
   }
 
+  // Docente: solo roster con rol "Docente" y que dicta este curso. Staff: solo roster con
+  // rol "Staff", sin filtrar por curso (mismo criterio que en Nueva edición).
   const docentesDelCurso = useMemo(
-    () => (datos ? docentes.filter((d) => d.cursos.includes(datos.edicion.curso)) : []),
+    () => (datos ? docentes.filter((d) => (d.roles || ['Docente']).includes('Docente') && d.cursos.includes(datos.edicion.curso)) : []),
     [datos, docentes]
+  );
+  const staffDisponible = useMemo(
+    () => docentes.filter((d) => (d.roles || ['Docente']).includes('Staff')),
+    [docentes]
   );
 
   const resumen = useMemo(
@@ -147,39 +193,113 @@ export default function EdicionDetallePage() {
     [datos, clasesDadas]
   );
 
-  if (cargando || !usuario || cargandoDatos) return <div className="max-w-[1300px] mx-auto px-6 pt-10 text-textSec text-sm">Cargando…</div>;
+  const porClase = useMemo(
+    () => (datos ? agruparPresentismoPorClase(clasesDadas, datos.presentismo) : []),
+    [datos, clasesDadas]
+  );
+
+  const puntosEvolucion = useMemo(
+    () => porClase.map((c) => ({ fecha: c.fecha, porcentaje: c.porcentaje, presentes: c.presentes, ausentes: c.ausentes })),
+    [porClase]
+  );
+
+  const estudiantesFiltrados = useMemo(() => {
+    const q = busqueda.trim().toLowerCase();
+    return (datos?.estudiantes || [])
+      .filter((e) => !q || e.nombre.toLowerCase().includes(q))
+      .filter((e) => !filtroEstado || e.estado === filtroEstado);
+  }, [datos, busqueda, filtroEstado]);
+
+  if (cargando || !usuario || cargandoDatos) {
+    return (
+      <div className="max-w-[1300px] mx-auto px-6 pt-10">
+        <div className="animate-pulse flex flex-col gap-3">
+          <div className="h-4 w-40 bg-surface2 rounded" />
+          <div className="h-6 w-72 bg-surface2 rounded" />
+          <div className="h-32 w-full bg-surface2 rounded-2xl mt-4" />
+          <div className="h-48 w-full bg-surface2 rounded-2xl" />
+        </div>
+      </div>
+    );
+  }
   if (error && !datos) return <div className="max-w-[1300px] mx-auto px-6 pt-10 text-dangerText text-sm">{error}</div>;
   if (!datos) return null;
 
   const { edicion, clases, estudiantes } = datos;
+  const color = colorCurso(edicion.curso);
+  const hayAsistenciaCargada = (datos.presentismo || []).length > 0;
 
   return (
     <div className="max-w-[1300px] mx-auto px-6 pb-16 pt-10">
       <Link href="/ediciones" className="text-textMuted text-xs underline">← Volver a ediciones</Link>
-      <h1 className="text-xl mt-1 mb-1">{nombreCurso(edicion.curso)} — Edición {edicion.numero}</h1>
-      <p className="text-textSec text-sm mb-5">{edicion.fechaInicio} → {edicion.fechaFin} · {clases.length} clases · {edicion.estado}</p>
+      <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+        <span className={`text-[10.5px] px-1.5 py-0.5 rounded-full font-semibold ${color.badge}`}>{nombreCurso(edicion.curso)}</span>
+        <h1 className="text-xl">Edición {edicion.numero}</h1>
+      </div>
+      <p className="text-textSec text-sm mb-5 mt-1">{edicion.fechaInicio} → {edicion.fechaFin} · {clases.length} clases · {edicion.estado}</p>
 
       {error && <p className="text-dangerText text-sm mb-3">{error}</p>}
       {mensaje && <p className="text-successText text-sm mb-3">{mensaje}</p>}
 
-      {resumen && estudiantes.length > 0 && (
-        <div className="bg-surface2 border border-border rounded-2xl p-4 mb-6">
-          <h2 className="text-sm font-semibold mb-3 text-center bg-infoBg text-infoText rounded-lg py-1.5">Seguimiento de Asistencia</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-1.5 text-sm mb-3">
-            <p className="text-textSec">Total Presentes</p><p className="font-semibold text-successText">{resumen.totalPresentes}</p>
-            <p className="text-textSec">Total Ausentes</p><p className="font-semibold text-dangerText">{resumen.totalAusentes}</p>
-            <p className="text-textSec">Total Ausentes justificados</p><p className="font-semibold text-warningText">{resumen.totalAusentesJustificados}</p>
-            <p className="text-textSec">Total de asincrónicos</p><p className="font-semibold text-infoText">{resumen.totalAsincronicos}</p>
-            <p className="text-textSec">CC</p><p className="font-semibold text-textMuted">{resumen.totalCC}</p>
-            <p className="text-textSec">Bajas</p><p className="font-semibold text-textMuted">{resumen.totalBajasClase}</p>
-          </div>
-          <div className="flex flex-wrap gap-2.5 pt-2 border-t border-border">
-            <span className="text-xs bg-bg border border-border rounded-lg px-2.5 py-1.5">Cantidad de estudiantes: <strong>{resumen.cantidadEstudiantes}</strong></span>
-            <span className="text-xs bg-dangerBg text-dangerText rounded-lg px-2.5 py-1.5">Porcentaje de bajas: <strong>{resumen.porcentajeBajas}%</strong></span>
-            <span className="text-xs bg-successBg text-successText rounded-lg px-2.5 py-1.5">
-              Porcentaje de presentismo: <strong>{resumen.porcentajePresentismo === null ? '—' : `${resumen.porcentajePresentismo}%`}</strong>
-            </span>
-          </div>
+      {/* ---------- Seguimiento de Asistencia ---------- */}
+      {estudiantes.length > 0 && (
+        <div className="bg-surface2 border border-border rounded-2xl p-4 sm:p-5 mb-6">
+          <h2 className="text-base font-semibold mb-0.5">Seguimiento de Asistencia</h2>
+          <p className="text-textMuted text-xs mb-4">Visualizá rápidamente la asistencia, ausencias y evolución de los estudiantes.</p>
+
+          {!hayAsistenciaCargada ? (
+            <div className="text-center py-8 bg-bg border border-dashed border-border rounded-xl">
+              <p className="text-sm font-medium text-textSec mb-1">Todavía no hay registros de asistencia</p>
+              <p className="text-xs text-textMuted">Cuando se carguen asistencias, vas a poder ver las métricas y evolución acá.</p>
+            </div>
+          ) : (
+            <>
+              {/* Indicadores por estado */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 mb-4">
+                {Object.entries(ICONO_INDICADOR).map(([campo, cfg]) => (
+                  <div key={campo} className={`rounded-xl border border-border p-3 ${cfg.bg}`}>
+                    <p className="text-[11px] text-textSec font-medium flex items-center gap-1">{cfg.icono} {cfg.label}</p>
+                    <p className={`text-xl font-bold mt-0.5 ${cfg.text}`}>{resumen[campo]}</p>
+                  </div>
+                ))}
+              </div>
+
+              {/* Métricas generales */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 mb-5">
+                <div className="bg-bg border border-border rounded-xl p-3.5 flex items-center justify-between">
+                  <div>
+                    <p className="text-[11px] text-textMuted">Estudiantes</p>
+                    <p className="text-2xl font-bold">{resumen.cantidadEstudiantes}</p>
+                  </div>
+                </div>
+                <div className="bg-bg border border-border rounded-xl p-3.5 flex items-center justify-between">
+                  <div>
+                    <p className="text-[11px] text-textMuted">Presentismo</p>
+                    <p className="text-2xl font-bold">{resumen.porcentajePresentismo === null ? '—' : `${resumen.porcentajePresentismo}%`}</p>
+                  </div>
+                  <AnilloPresentismo pct={resumen.porcentajePresentismo} />
+                </div>
+                <div className="bg-bg border border-border rounded-xl p-3.5 flex items-center justify-between">
+                  <div>
+                    <p className="text-[11px] text-textMuted">Bajas</p>
+                    <p className={`text-2xl font-bold ${resumen.porcentajeBajas > 0 ? 'text-dangerText' : ''}`}>{resumen.porcentajeBajas}%</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Gráficos */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <div className="bg-bg border border-border rounded-xl p-4">
+                  <p className="text-xs font-semibold text-textSec mb-3">Distribución de asistencia</p>
+                  <DistribucionEstados resumen={resumen} />
+                </div>
+                <div className="bg-bg border border-border rounded-xl p-4">
+                  <p className="text-xs font-semibold text-textSec mb-3">Evolución del presentismo</p>
+                  <LineaEvolucion puntos={puntosEvolucion} />
+                </div>
+              </div>
+            </>
+          )}
         </div>
       )}
 
@@ -196,7 +316,7 @@ export default function EdicionDetallePage() {
             <label className="text-xs text-textSec block mb-1">Staff</label>
             <select defaultValue={edicion.staffEmail} onChange={(e) => guardarEdicion({ staffEmail: e.target.value })} className={inputCls}>
               <option value="">— Sin asignar —</option>
-              {docentes.map((d) => <option key={d.email} value={d.email}>{d.nombre}</option>)}
+              {staffDisponible.map((d) => <option key={d.email} value={d.email}>{d.nombre}</option>)}
             </select>
           </div>
           <div className="min-w-[160px]">
@@ -218,81 +338,138 @@ export default function EdicionDetallePage() {
         </details>
       )}
 
+      {/* ---------- Listado de Presentismo ---------- */}
       {estudiantes.length === 0 ? (
         <p className="text-textMuted text-sm">Todavía no hay estudiantes cargados en esta edición.</p>
       ) : (
-        <div className="overflow-x-auto border border-border rounded-2xl">
-          <table className="border-collapse text-xs w-full">
-            <thead>
-              <tr className="bg-surface2">
-                <th className="sticky left-0 bg-surface2 text-left px-3 py-2 border-b border-border min-w-[220px]">Estudiante</th>
-                <th className="text-left px-2 py-2 border-b border-border min-w-[70px]">Estado</th>
-                <th className="text-left px-2 py-2 border-b border-border min-w-[70px]">Alerta</th>
-                <th className="text-left px-2 py-2 border-b border-border min-w-[55px]">%</th>
-                {clases.map((c) => (
-                  <th key={c.id} className="px-1.5 py-2 border-b border-border border-l border-border text-center min-w-[54px] font-normal text-textMuted">
-                    #{c.numero}<br />{c.fecha.slice(5)}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {estudiantes.map((est) => {
-                const registros = registrosDe(est.id);
-                const ordenados = clases.map((c) => registros.find((r) => r.claseId === c.id) || { claseId: c.id, estado: '' })
-                  .filter((r) => r.estado);
-                const porcentaje = calcularPorcentaje(registros, clasesDadas);
-                const alerta = calcularAlerta(ordenados, porcentaje);
-                return (
-                  <tr key={est.id} className="odd:bg-bg even:bg-surface2/40">
-                    <td className="sticky left-0 bg-inherit px-3 py-1.5 border-b border-border font-medium">
-                      <button onClick={() => setEstudianteAbierto(estudianteAbierto === est.id ? null : est.id)} className="text-left hover:underline">
-                        {est.nombre}
-                      </button>
-                      {estudianteAbierto === est.id && (
-                        <PanelEstudiante
-                          estudiante={est}
-                          gestion={gestion}
-                          puedeNotas={puedeNotas}
-                          edicionId={id}
-                          onActualizar={(cambios) => actualizarEstudiante(est.id, cambios)}
-                          onCerrar={() => setEstudianteAbierto(null)}
-                        />
-                      )}
-                    </td>
-                    <td className="px-2 py-1.5 border-b border-border">
-                      <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-semibold ${(COLOR_ESTADO[est.estado] || {}).bg} ${(COLOR_ESTADO[est.estado] || {}).text}`}>
-                        {est.estado}
-                      </span>
-                    </td>
-                    <td className="px-2 py-1.5 border-b border-border">
-                      <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-semibold ${COLOR_ALERTA[alerta].bg} ${COLOR_ALERTA[alerta].text}`}>
-                        {alerta}
-                      </span>
-                    </td>
-                    <td className="px-2 py-1.5 border-b border-border text-textSec">{porcentaje === null ? '—' : `${porcentaje}%`}</td>
-                    {clases.map((c) => {
-                      const reg = registros.find((r) => r.claseId === c.id);
-                      const estado = reg?.estado || '';
-                      return (
-                        <td key={c.id} className="border-b border-l border-border p-0.5 text-center">
-                          <select
-                            disabled={!puedeCargar}
-                            value={estado}
-                            onChange={(ev) => marcarPresentismo(est.id, c.id, ev.target.value)}
-                            className={`w-full text-[10.5px] rounded px-0.5 py-1 border-0 text-center ${estado ? COLOR_PRESENTISMO[estado] : 'bg-transparent text-textMuted'}`}
-                          >
-                            <option value="">·</option>
-                            {ESTADOS_PRESENTISMO.map((e) => <option key={e} value={e}>{e}</option>)}
-                          </select>
-                        </td>
-                      );
-                    })}
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+        <div>
+          <div className="flex items-center justify-between flex-wrap gap-3 mb-3">
+            <h2 className="text-sm font-semibold">Listado de presentismo</h2>
+            <div className="flex items-center gap-2 flex-wrap">
+              <input
+                value={busqueda} onChange={(e) => setBusqueda(e.target.value)}
+                placeholder="Buscar estudiante…"
+                className="bg-surface2 border border-border rounded-lg px-3 py-1.5 text-xs w-48"
+              />
+            </div>
+          </div>
+
+          <div className="flex items-center gap-1.5 flex-wrap mb-3">
+            {FILTROS_ESTADO_ESTUDIANTE.map((f) => (
+              <button
+                key={f.valor}
+                onClick={() => setFiltroEstado(f.valor)}
+                className={`text-xs px-2.5 py-1.5 rounded-full border font-medium transition-colors ${
+                  filtroEstado === f.valor
+                    ? 'bg-gradient-to-r from-accentPurple to-accentMagenta text-white border-transparent'
+                    : 'bg-surface2 border-border text-textSec hover:border-accentTeal'
+                }`}
+              >
+                {f.icono} {f.label}
+              </button>
+            ))}
+          </div>
+
+          <div className="flex flex-wrap gap-3 mb-3 text-[10.5px] text-textMuted items-center">
+            <span className="font-semibold text-textSec">Referencias:</span>
+            {ESTADOS_PRESENTISMO.map((e) => (
+              <span key={e} className="flex items-center gap-1">
+                <span className={`w-3 h-3 rounded-full inline-block ${(COLOR_PRESENTISMO[e] || '').split(' ')[0]}`} /> {e}
+              </span>
+            ))}
+          </div>
+
+          {estudiantesFiltrados.length === 0 ? (
+            <p className="text-textMuted text-sm bg-surface2 border border-border rounded-xl p-4">No hay estudiantes que coincidan con la búsqueda o el filtro elegido.</p>
+          ) : (
+          <div className="overflow-x-auto border border-border rounded-2xl">
+            <table className="border-collapse text-xs w-full">
+              <thead>
+                <tr className="bg-surface2">
+                  <th className="sticky left-0 bg-surface2 text-left px-3 py-2.5 border-b border-border min-w-[220px] font-semibold">Estudiante</th>
+                  <th className="text-left px-2 py-2.5 border-b border-border min-w-[80px] font-semibold">Estado</th>
+                  <th className="text-left px-2 py-2.5 border-b border-border min-w-[80px] font-semibold">Alerta</th>
+                  <th className="text-left px-2 py-2.5 border-b border-border min-w-[70px] font-semibold">% Asist.</th>
+                  {clases.map((c) => (
+                    <th key={c.id} className="px-1.5 py-2.5 border-b border-border border-l border-border text-center min-w-[54px] font-normal text-textMuted">
+                      #{c.numero}<br />{c.fecha.slice(5)}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {estudiantesFiltrados.map((est) => {
+                  const registros = registrosDe(est.id);
+                  const ordenados = clases.map((c) => registros.find((r) => r.claseId === c.id) || { claseId: c.id, estado: '' })
+                    .filter((r) => r.estado);
+                  const porcentaje = calcularPorcentaje(registros, clasesDadas);
+                  const alerta = calcularAlerta(ordenados, porcentaje);
+                  const colorEstado = COLOR_ESTADO[est.estado] || {};
+                  const colorAlerta = COLOR_ALERTA[alerta];
+                  const barraLateral = alerta === 'Riesgo' ? 'border-l-dangerText' : alerta === 'Atencion' ? 'border-l-warningText' : 'border-l-successText';
+                  return (
+                    <tr key={est.id} className={`odd:bg-bg even:bg-surface2/40 hover:bg-accentTeal/5 transition-colors border-l-2 ${barraLateral}`}>
+                      <td className="sticky left-0 bg-inherit px-3 py-2 border-b border-border font-medium">
+                        <button onClick={() => setEstudianteAbierto(estudianteAbierto === est.id ? null : est.id)} className="text-left hover:underline">
+                          {est.nombre}
+                        </button>
+                        {estudianteAbierto === est.id && (
+                          <PanelEstudiante
+                            estudiante={est}
+                            gestion={gestion}
+                            puedeNotas={puedeNotas}
+                            edicionId={id}
+                            onActualizar={(cambios) => actualizarEstudiante(est.id, cambios)}
+                            onCerrar={() => setEstudianteAbierto(null)}
+                          />
+                        )}
+                      </td>
+                      <td className="px-2 py-2 border-b border-border">
+                        <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-semibold whitespace-nowrap ${colorEstado.bg} ${colorEstado.text}`}>
+                          {est.estado}
+                        </span>
+                      </td>
+                      <td className="px-2 py-2 border-b border-border">
+                        <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-semibold ${colorAlerta.bg} ${colorAlerta.text}`}>
+                          {alerta}
+                        </span>
+                      </td>
+                      <td className="px-2 py-2 border-b border-border">
+                        {porcentaje === null ? (
+                          <span className="text-textMuted">—</span>
+                        ) : (
+                          <div className="flex items-center gap-1.5">
+                            <span className={`font-semibold ${porcentaje >= 70 ? 'text-successText' : 'text-dangerText'}`}>{porcentaje}%</span>
+                            <span className="w-8 h-1 rounded-full bg-border overflow-hidden inline-block">
+                              <span className={`h-1 block ${porcentaje >= 70 ? 'bg-successText' : 'bg-dangerText'}`} style={{ width: `${porcentaje}%` }} />
+                            </span>
+                          </div>
+                        )}
+                      </td>
+                      {clases.map((c) => {
+                        const reg = registros.find((r) => r.claseId === c.id);
+                        const estado = reg?.estado || '';
+                        return (
+                          <td key={c.id} className="border-b border-l border-border p-0.5 text-center">
+                            <select
+                              disabled={!puedeCargar}
+                              value={estado}
+                              onChange={(ev) => marcarPresentismo(est.id, c.id, ev.target.value)}
+                              className={`w-full text-[10.5px] rounded px-0.5 py-1 border-0 text-center ${estado ? COLOR_PRESENTISMO[estado] : 'bg-transparent text-textMuted'}`}
+                            >
+                              <option value="">·</option>
+                              {ESTADOS_PRESENTISMO.map((e) => <option key={e} value={e}>{e}</option>)}
+                            </select>
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+          )}
         </div>
       )}
     </div>

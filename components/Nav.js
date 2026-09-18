@@ -74,17 +74,10 @@ export default function Nav() {
   return (
     <div className="max-w-[1440px] mx-auto px-6 pt-4">
       <div className="flex items-center justify-between mb-3 gap-3 flex-wrap">
-        <div className="flex flex-col gap-1 shrink-0 max-w-md">
-          <Link href="/ediciones" className="flex items-center gap-2">
-            <Logo height={28} />
-            <span className="text-sm font-bold text-textMuted">Presentismo</span>
-          </Link>
-          <p className="text-[11px] text-textMuted italic leading-snug">
-            El listado de presentismo es una herramienta pedagógica que nos permite acompañar de mejor manera a
-            nuestros estudiantes, identificando su participación y pudiendo intervenir oportunamente cuando sea
-            necesario.
-          </p>
-        </div>
+        <Link href="/ediciones" className="flex items-center gap-2 shrink-0">
+          <Logo height={28} />
+          <span className="text-sm font-bold text-textMuted">Presentismo</span>
+        </Link>
 
         <div className="flex items-center gap-2 shrink-0">
           {puedeVerComo && (
@@ -111,6 +104,18 @@ export default function Nav() {
               </div>
             </div>
           )}
+        </div>
+      </div>
+
+      <div className="bg-gradient-to-br from-accentPurple/10 to-accentTeal/5 border border-accentPurple/20 rounded-2xl px-4 py-3 mb-4 flex items-start gap-3">
+        <span className="w-8 h-8 rounded-full bg-gradient-to-br from-accentPurple to-accentMagenta flex items-center justify-center text-white text-sm shrink-0">🧭</span>
+        <div>
+          <p className="text-[13px] font-semibold text-text">Acompañamos, observamos e intervenimos.</p>
+          <p className="text-[11.5px] text-textSec leading-snug mt-0.5">
+            El seguimiento del presentismo nos permite conocer la participación de nuestros estudiantes, identificar
+            tempranamente situaciones que requieren atención y tomar decisiones oportunas para acompañar sus
+            trayectorias.
+          </p>
         </div>
       </div>
 

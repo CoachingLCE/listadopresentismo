@@ -5,7 +5,7 @@ import { tienePermisoVerReportes, esRolLimitadoAEdicionesPropias } from '../../.
 import { leerEdiciones, filtrarEdicionesPorUsuario, leerClasesDeEdicion } from '../../../lib/datosEdiciones';
 import { leerEstudiantesDeEdicion } from '../../../lib/datosEstudiantes';
 import { leerPresentismoDeEdicion } from '../../../lib/datosPresentismo';
-import { calcularResumenPresentismo, calcularAusentismoClase } from '../../../lib/presentismoCalculo';
+import { calcularResumenPresentismo, calcularAusentismoClase, agruparPresentismoPorClase } from '../../../lib/presentismoCalculo';
 import { nombreCurso } from '../../../lib/cursosLogic';
 
 const UMBRAL_AUSENTISMO_CLASE = 50; // % de A sobre lo marcado en una clase puntual
@@ -71,7 +71,8 @@ export const GET = conManejo(async (request) => {
       edicion: { ...edicion, nombreCurso: nombreCurso(edicion.curso) },
       resumen,
       clasesDadas: clasesDadas.length,
-      clasesTotal: clases.length
+      clasesTotal: clases.length,
+      porClase: agruparPresentismoPorClase(clasesDadas, presentismo)
     };
   }));
 
