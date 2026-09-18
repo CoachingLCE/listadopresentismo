@@ -249,7 +249,10 @@ export default function DocentesPage() {
         <input
           value={busqueda} onChange={(e) => setBusqueda(e.target.value)}
           placeholder="Buscar por nombre o email…"
-          type="text" name="filtro-docentes" autoComplete="off" data-1p-ignore data-lpignore="true"
+          // type="search" (en vez de "text") es lo que de verdad evita que Chrome ofrezca
+          // autocompletar con un email guardado del navegador — autoComplete="off" solo
+          // frena a los gestores de contraseñas, no al autocompletado nativo de direcciones.
+          type="search" name="filtro-docentes" autoComplete="off" data-1p-ignore data-lpignore="true"
           className="bg-surface2 border border-border rounded-lg px-3 py-2 text-sm flex-1 min-w-[220px] transition-colors focus:outline-none focus:border-accentTeal focus:ring-2 focus:ring-accentTeal/20 placeholder:text-textMuted"
         />
         <div className="flex gap-1.5 flex-wrap">

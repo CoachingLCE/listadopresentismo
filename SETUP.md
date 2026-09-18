@@ -65,6 +65,12 @@ Una fila por (estudiante, clase). `Estado` es uno de: `P` (Presente), `A` (Ausen
 
 Se completa sola — es el registro de qué alertas de Reportes ya se avisaron por mail, para no mandar el mismo aviso todos los días. Solo hace falta crear la pestaña con estos dos encabezados exactos; si no existe, el cron de alertas simplemente no deduplica nada (manda todo de nuevo cada vez) hasta que la crees.
 
+### Pestaña `EmailsEnviados` (nueva desde v0.3.6, opcional)
+| Fecha | Destinatarios | Asunto | Html | CantidadAlertas |
+|---|---|---|---|---|
+
+Se completa sola cada vez que el cron manda un mail de verdad — es el "Registro de envíos" que se ve en la pantalla Emails, con el contenido real de cada mail que salió (para poder abrirlo después con "Ver mail →"). Es opcional: si no creás esta pestaña, la app sigue funcionando igual, solo que esa lista queda vacía.
+
 ## 2. Compartir el Sheet con la cuenta de servicio
 
 Compartí el Sheet (botón "Compartir") con:

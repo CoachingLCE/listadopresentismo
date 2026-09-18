@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { conManejo } from '../../../../lib/apiHandler';
 import { calcularReporteCompleto, construirDigestAlertas } from '../../../../lib/alertasReportes';
 import { leerClavesEnviadas, marcarComoEnviada } from '../../../../lib/alertasEnviadas';
+import { registrarEnvioMail } from '../../../../lib/emailsEnviados';
 import { listarUsuarios } from '../../../../lib/gestionUsuarios';
 import { tienePermisoVerReportes } from '../../../../lib/permisos';
 import { enviarMail } from '../../../../lib/mailer';
@@ -58,6 +59,13 @@ export const GET = conManejo(async (request) => {
   // se configuró GMAIL_USER/GMAIL_APP_PASSWORD), se vuelven a intentar en la próxima corrida.
   if (enviado) {
     for (const a of nuevas) await marcarComoEnviada(a.clave);
+    // Registro real del envío (para el "Registro de envíos" de la pantalla Emails) — si
+    // falla (por ejemplo, la pestaña EmailsEnviados no existe todavía), no rompe el cron.
+    try {
+      await registrarEnvioMail({ destinatarios, asunto, html, cantidadAlertas: nuevas.length });
+    } catch (err) {
+      console.error('No se pudo registrar el envío en EmailsEnviados:', err.message);
+    }
   }
 
   return NextResponse.json({

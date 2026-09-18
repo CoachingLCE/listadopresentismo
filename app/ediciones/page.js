@@ -14,6 +14,7 @@ export default function EdicionesPage() {
   const [cargandoLista, setCargandoLista] = useState(true);
   const [error, setError] = useState('');
   const [filtro, setFiltro] = useState('');
+  const [filtroCurso, setFiltroCurso] = useState('');
   const [soloActivas, setSoloActivas] = useState(true);
   const [cargandoEjemplo, setCargandoEjemplo] = useState(false);
   const [borrandoId, setBorrandoId] = useState('');
@@ -80,13 +81,25 @@ export default function EdicionesPage() {
     }
   }
 
+  // Chips de curso: solo se muestran los cursos que tienen al menos una edición cargada
+  // (no los 9 del catálogo completo), con la cantidad de ediciones de cada uno — mismo
+  // patrón que los chips de rol en Equipo docente.
+  const chipsCurso = useMemo(() => {
+    const cuentas = new Map();
+    for (const e of ediciones) cuentas.set(e.curso, (cuentas.get(e.curso) || 0) + 1);
+    return [...cuentas.entries()]
+      .map(([codigo, cantidad]) => ({ codigo, nombre: nombreCurso(codigo), cantidad }))
+      .sort((a, b) => a.nombre.localeCompare(b.nombre));
+  }, [ediciones]);
+
   const filtradas = useMemo(() => {
     const q = filtro.trim().toLowerCase();
     return ediciones
       .filter((e) => !soloActivas || estadoCalculado(e) === 'Activa')
+      .filter((e) => !filtroCurso || e.curso === filtroCurso)
       .filter((e) => !q || nombreCurso(e.curso).toLowerCase().includes(q) || e.docenteNombre.toLowerCase().includes(q) || e.staffNombre.toLowerCase().includes(q))
       .sort((a, b) => (b.fechaInicio || '').localeCompare(a.fechaInicio || ''));
-  }, [ediciones, filtro, soloActivas]);
+  }, [ediciones, filtro, filtroCurso, soloActivas]);
 
   if (cargando || !usuario) return null;
 
@@ -119,7 +132,7 @@ export default function EdicionesPage() {
         <input
           value={filtro} onChange={(e) => setFiltro(e.target.value)}
           placeholder="Buscar por curso o docente…"
-          type="text" name="filtro-ediciones" autoComplete="off" data-1p-ignore data-lpignore="true"
+          type="search" name="filtro-ediciones" autoComplete="off" data-1p-ignore data-lpignore="true"
           className="bg-surface2 border border-border rounded-lg px-3 py-2 text-sm flex-1 min-w-[220px]"
         />
         <button
@@ -134,6 +147,29 @@ export default function EdicionesPage() {
           {soloActivas ? '✓' : ''} Solo activas
         </button>
       </div>
+
+      {chipsCurso.length > 1 && (
+        <div className="flex gap-1.5 mb-5 flex-wrap">
+          <button
+            type="button" onClick={() => setFiltroCurso('')}
+            className={`text-xs px-3 py-1.5 rounded-full font-medium border transition-colors ${
+              !filtroCurso ? 'bg-gradient-to-r from-accentPurple to-accentMagenta text-white border-transparent' : 'bg-surface2 border-border text-textSec hover:border-accentTeal'
+            }`}
+          >
+            Todos <span className="opacity-70">{ediciones.length}</span>
+          </button>
+          {chipsCurso.map((c) => (
+            <button
+              key={c.codigo} type="button" onClick={() => setFiltroCurso(c.codigo)}
+              className={`text-xs px-3 py-1.5 rounded-full font-medium border transition-colors ${
+                filtroCurso === c.codigo ? 'bg-gradient-to-r from-accentPurple to-accentMagenta text-white border-transparent' : 'bg-surface2 border-border text-textSec hover:border-accentTeal'
+              }`}
+            >
+              {c.nombre} <span className="opacity-70">{c.cantidad}</span>
+            </button>
+          ))}
+        </div>
+      )}
 
       {error && <p className="text-dangerText text-sm mb-3">{error}</p>}
 

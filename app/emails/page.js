@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from '../../lib/useSession';
 import { tienePermisoVerReportes } from '../../lib/permisos';
@@ -10,12 +10,22 @@ const NIVEL_BADGE = {
 };
 const NIVEL_LABEL = { clase: 'Clase puntual', edicion: 'Edición' };
 
+function formatearFecha(iso) {
+  if (!iso) return '—';
+  try {
+    return new Date(iso).toLocaleString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+  } catch { return iso; }
+}
+
 export default function EmailsPage() {
   const { usuario, cargando, fetchAutenticado } = useSession();
   const router = useRouter();
   const [datos, setDatos] = useState(null);
   const [cargandoDatos, setCargandoDatos] = useState(true);
   const [error, setError] = useState('');
+  const [verPlantilla, setVerPlantilla] = useState(false);
+  const [envioAbiertoId, setEnvioAbiertoId] = useState(null);
+  const [busquedaRegistro, setBusquedaRegistro] = useState('');
 
   const puede = usuario ? tienePermisoVerReportes(usuario) : false;
 
@@ -42,15 +52,19 @@ export default function EmailsPage() {
     }
   }
 
+  const registro = datos?.registro || [];
+  const registroFiltrado = useMemo(() => {
+    if (!busquedaRegistro.trim()) return registro;
+    const q = busquedaRegistro.trim().toLowerCase();
+    return registro.filter((r) => `${r.asunto} ${r.destinatarios.join(' ')}`.toLowerCase().includes(q));
+  }, [registro, busquedaRegistro]);
+
   if (cargando || !usuario || !puede) return null;
 
   return (
     <div className="max-w-[900px] mx-auto px-6 pb-16 pt-10">
-      <h1 className="text-xl mb-1">Emails automáticos</h1>
-      <p className="text-textSec text-sm mb-5">
-        Mismas alertas que ves en Reportes (ausentismo alto en una clase, muchas bajas o presentismo bajo en una
-        edición), armadas como el mail-resumen que el sistema manda solo una vez por día.
-      </p>
+      <h1 className="text-xl mb-1">Emails</h1>
+      <p className="text-textSec text-sm mb-5">Qué mails automáticos manda el sistema, y el registro real de cada envío.</p>
 
       {error && <p className="text-dangerText text-sm mb-3">{error}</p>}
 
@@ -65,8 +79,8 @@ export default function EmailsPage() {
                 Lo que ves abajo es una vista previa — así van a quedar los mails el día que se manden, pero por
                 ahora no sale ninguno. Para prenderlo hace falta cargar <code className="text-[11px]">GMAIL_USER</code>,{' '}
                 <code className="text-[11px]">GMAIL_APP_PASSWORD</code> y <code className="text-[11px]">CRON_SECRET</code> en
-                las variables de entorno de Vercel, y crear la pestaña &quot;AlertasEnviadas&quot; en el Google Sheet
-                (los pasos exactos están en SETUP.md).
+                las variables de entorno de Vercel, y crear la pestaña &quot;AlertasEnviadas&quot; (y opcionalmente
+                &quot;EmailsEnviados&quot;, para el registro de abajo) en el Google Sheet — los pasos exactos están en SETUP.md.
               </p>
             </div>
           ) : (
@@ -76,34 +90,102 @@ export default function EmailsPage() {
             </div>
           )}
 
-          <div className="mb-6">
-            <p className="text-xs text-textSec font-medium mb-1.5">Se les avisaría a ({datos.destinatarios.length}):</p>
-            {datos.destinatarios.length === 0 ? (
-              <p className="text-textMuted text-xs">Todavía no hay nadie con SuperAdmin/Coordinación/Académico y un email cargado en Accesos.</p>
-            ) : (
-              <div className="flex flex-wrap gap-1.5">
-                {datos.destinatarios.map((email) => (
-                  <span key={email} className="text-[11px] px-2 py-1 rounded-full bg-surface2 border border-border text-textSec">{email}</span>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {datos.digest && (
-            <div className="mb-8">
-              <p className="text-sm font-semibold mb-2">Vista previa del mail</p>
-              <div className="bg-surface2 border border-border rounded-2xl overflow-hidden">
-                <div className="px-4 py-2.5 border-b border-border bg-bg/40">
-                  <p className="text-[11px] text-textMuted">Para: {datos.destinatarios.join(', ') || '—'}</p>
-                  <p className="text-xs font-semibold mt-0.5">{datos.digest.asunto}</p>
+          {/* Definición de los mails automáticos — por ahora hay uno solo (el resumen diario
+              de alertas de Reportes), armado como tabla para que se vea igual que en las
+              otras apps de ILCE. "Ver mail" muestra la info recién al hacer clic, no antes. */}
+          <div className="mb-8">
+            <p className="text-sm font-semibold mb-2.5">Mails automáticos que genera el sistema</p>
+            <div className="bg-surface2 border border-border rounded-2xl overflow-hidden">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-left text-textMuted text-xs border-b border-border">
+                    <th className="px-4 py-2.5 font-medium">Cuándo se envía</th>
+                    <th className="px-3 py-2.5 font-medium">A quién</th>
+                    <th className="px-3 py-2.5 font-medium">Asunto</th>
+                    <th className="px-3 py-2.5 font-medium">Tipo</th>
+                    <th className="px-3 py-2.5 font-medium w-24"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr className="border-b border-border last:border-0 align-top">
+                    <td className="px-4 py-3 text-xs">Todos los días (automático), si hay alertas nuevas</td>
+                    <td className="px-3 py-3">
+                      {datos.destinatarios.length === 0 ? (
+                        <span className="text-textMuted text-xs">Nadie configurado todavía</span>
+                      ) : (
+                        <div className="flex flex-wrap gap-1">
+                          {datos.destinatarios.map((email) => (
+                            <span key={email} className="text-[10.5px] px-1.5 py-0.5 rounded-full bg-surface border border-border text-textSec">{email}</span>
+                          ))}
+                        </div>
+                      )}
+                    </td>
+                    <td className="px-3 py-3 text-xs">{datos.vistaPrevia?.asunto || <span className="text-textMuted">— (sin alertas para armar un ejemplo)</span>}</td>
+                    <td className="px-3 py-3">
+                      <span className="text-[10.5px] px-2 py-0.5 rounded-full font-semibold bg-infoBg text-infoText whitespace-nowrap">Resumen de alertas</span>
+                    </td>
+                    <td className="px-3 py-3 text-right">
+                      {datos.vistaPrevia && (
+                        <button onClick={() => setVerPlantilla((v) => !v)} className="text-xs text-accentTeal hover:underline font-medium whitespace-nowrap">
+                          {verPlantilla ? 'Ocultar' : 'Ver mail →'}
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+              {verPlantilla && datos.vistaPrevia && (
+                <div className="border-t border-border">
+                  <div className="px-4 py-2.5 border-b border-border bg-bg/40">
+                    <p className="text-[11px] text-textMuted">Para: {datos.destinatarios.join(', ') || '—'}</p>
+                    <p className="text-xs font-semibold mt-0.5">{datos.vistaPrevia.asunto}</p>
+                  </div>
+                  <div className="p-4 bg-white" dangerouslySetInnerHTML={{ __html: datos.vistaPrevia.html }} />
                 </div>
-                <div className="p-4 bg-white" dangerouslySetInnerHTML={{ __html: datos.digest.html }} />
-              </div>
+              )}
             </div>
-          )}
+          </div>
 
           <ListaAlertas titulo="Pendientes de aviso" items={datos.pendientes} vacio="No hay alertas nuevas en este momento." />
           <ListaAlertas titulo="Ya avisadas" items={datos.enviadas} vacio="Todavía no se mandó ningún aviso." />
+
+          {/* Registro real de mails que salieron de verdad (lib/emailsEnviados.js) — distinto
+              de "Ya avisadas" de arriba, que es la lista de alertas puntuales, no de envíos. */}
+          <div className="mb-8">
+            <div className="flex items-center justify-between gap-3 mb-2.5 flex-wrap">
+              <p className="text-sm font-semibold">Registro de envíos <span className="text-textMuted font-normal">({registro.length})</span></p>
+              <input
+                value={busquedaRegistro} onChange={(e) => setBusquedaRegistro(e.target.value)}
+                placeholder="🔎 Buscar…" type="search" autoComplete="off"
+                className="bg-surface2 border border-border rounded-lg px-3 py-1.5 text-xs w-56 focus:outline-none focus:border-accentTeal"
+              />
+            </div>
+            {registro.length === 0 ? (
+              <p className="text-textMuted text-sm bg-surface2 border border-border rounded-xl p-4">Todavía no se mandó ningún mail.</p>
+            ) : registroFiltrado.length === 0 ? (
+              <p className="text-textMuted text-sm bg-surface2 border border-border rounded-xl p-4">Nada coincide con esa búsqueda.</p>
+            ) : (
+              <div className="flex flex-col gap-2">
+                {registroFiltrado.map((r) => {
+                  const abierto = envioAbiertoId === r.id;
+                  return (
+                    <div key={r.id} className="bg-surface2 border border-border rounded-xl overflow-hidden">
+                      <button onClick={() => setEnvioAbiertoId(abierto ? null : r.id)} className="w-full flex items-center justify-between gap-3 px-3.5 py-2.5 text-left">
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium truncate">{r.asunto || '(sin asunto)'}</p>
+                          <p className="text-xs text-textMuted truncate">{formatearFecha(r.fecha)} · {r.destinatarios.join(', ') || '—'}{r.cantidadAlertas !== '' ? ` · ${r.cantidadAlertas} alerta(s)` : ''}</p>
+                        </div>
+                        <span className="text-xs text-accentTeal font-medium shrink-0">{abierto ? 'Ocultar' : 'Ver mail →'}</span>
+                      </button>
+                      {abierto && (
+                        <div className="border-t border-border p-4 bg-white" dangerouslySetInnerHTML={{ __html: r.html || '<p style="color:#888">Sin contenido guardado.</p>' }} />
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
         </>
       )}
     </div>

@@ -4,6 +4,7 @@ import { requireUsuario } from '../../../lib/requireUsuario';
 import { tienePermisoVerReportes } from '../../../lib/permisos';
 import { calcularReporteCompleto, construirDigestAlertas } from '../../../lib/alertasReportes';
 import { leerClavesEnviadas } from '../../../lib/alertasEnviadas';
+import { leerEmailsEnviados } from '../../../lib/emailsEnviados';
 import { listarUsuarios } from '../../../lib/gestionUsuarios';
 
 // GET /api/alertas -> pantalla "Emails": muestra qué alertas generarían un mail automático
@@ -16,10 +17,11 @@ export const GET = conManejo(async (request) => {
   if (!usuario) return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
   if (!tienePermisoVerReportes(usuario)) return NextResponse.json({ error: 'Sin permiso' }, { status: 403 });
 
-  const [{ alertas }, yaEnviadas, usuarios] = await Promise.all([
+  const [{ alertas }, yaEnviadas, usuarios, registro] = await Promise.all([
     calcularReporteCompleto(),
     leerClavesEnviadas(),
-    listarUsuarios()
+    listarUsuarios(),
+    leerEmailsEnviados()
   ]);
 
   const alertasConEstado = alertas.map((a) => ({ ...a, yaEnviada: yaEnviadas.has(a.clave) }));
@@ -32,8 +34,11 @@ export const GET = conManejo(async (request) => {
     .filter(Boolean);
 
   const digest = pendientes.length > 0 ? construirDigestAlertas(pendientes) : null;
+  // Si no hay nada pendiente todavía, igual armamos un ejemplo con las alertas que haya
+  // (aunque ya estén avisadas) para que "Ver mail" siempre tenga algo que mostrar.
+  const vistaPrevia = digest || (alertas.length > 0 ? construirDigestAlertas(alertas) : null);
 
   const configurado = !!(process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD && process.env.CRON_SECRET);
 
-  return NextResponse.json({ pendientes, enviadas, destinatarios, digest, configurado });
+  return NextResponse.json({ pendientes, enviadas, destinatarios, digest, vistaPrevia, registro, configurado });
 })
