@@ -13,22 +13,24 @@ const badgeEstado = {
   Resuelto: 'bg-successBg text-successText'
 };
 
-// Un color fijo por motivo (nunca reasignado), en el mismo estilo de identidad visual que
-// ya se usa para cursos y estados en el resto de la app — la lista de motivos ya está
-// ordenada alfabéticamente más abajo, así que estos colores se ven en ese mismo orden.
+// Un color fijo por motivo (nunca reasignado), cada uno distinto — en hex directo porque
+// el <select> nativo del navegador no respeta clases de Tailwind en cada <option> (Chrome
+// solo pinta background-color/color inline u por className simple, y si se lo aplicamos
+// solo al <select> termina pintando TODAS las opciones de la lista abierta igual). La
+// lista de motivos ya está ordenada alfabéticamente más abajo.
 const MOTIVO_COLOR = {
-  Ausencia: 'bg-dangerBg text-dangerText',
-  Certificacion: 'bg-successBg text-successText',
-  'Cambio a asincronico': 'bg-infoBg text-infoText',
-  'Cambio de edicion': 'bg-accentTeal/15 text-accentTeal',
-  Economico: 'bg-warningBg text-warningText',
-  'En progreso de baja': 'bg-dangerBg text-dangerText',
-  Otro: 'bg-surface text-textMuted',
-  'Problema academico': 'bg-accentMagenta/15 text-accentMagenta',
-  'Problema de horarios': 'bg-warningBg text-warningText',
-  'Problema personal': 'bg-accentPurple/15 text-accentPurple',
-  Reincorporacion: 'bg-successBg text-successText',
-  Seguimiento: 'bg-infoBg text-infoText'
+  Ausencia: { bg: '#3a1414', text: '#f87171' },
+  Certificacion: { bg: '#0f2e22', text: '#4ade80' },
+  'Cambio a asincronico': { bg: '#0f1f33', text: '#60a5fa' },
+  'Cambio de edicion': { bg: '#0e2e2c', text: '#2dd4bf' },
+  Economico: { bg: '#33210b', text: '#fbbf24' },
+  'En progreso de baja': { bg: '#2e1a3d', text: '#c084fc' },
+  Otro: { bg: '#1c2138', text: '#9aa1c2' },
+  'Problema academico': { bg: '#2f1233', text: '#e879f9' },
+  'Problema de horarios': { bg: '#1a2e40', text: '#38bdf8' },
+  'Problema personal': { bg: '#331a2a', text: '#f472b6' },
+  Reincorporacion: { bg: '#1a2e1c', text: '#86efac' },
+  Seguimiento: { bg: '#241a3d', text: '#a78bfa' }
 };
 const MOTIVOS_ORDENADOS = [...MOTIVOS_SEGUIMIENTO].sort((a, b) => a.localeCompare(b, 'es'));
 
@@ -149,9 +151,12 @@ function SeguimientoContenido() {
             <label className="text-xs text-textSec block mb-1">Motivo</label>
             <select
               value={motivo} onChange={(e) => setMotivo(e.target.value)}
-              className={`w-full border border-border rounded-lg px-2.5 py-2 text-sm font-medium ${MOTIVO_COLOR[motivo] || 'bg-bg'}`}
+              style={{ backgroundColor: (MOTIVO_COLOR[motivo] || {}).bg, color: (MOTIVO_COLOR[motivo] || {}).text }}
+              className="w-full border border-border rounded-lg px-2.5 py-2 text-sm font-medium"
             >
-              {MOTIVOS_ORDENADOS.map((m) => <option key={m} value={m}>{m}</option>)}
+              {MOTIVOS_ORDENADOS.map((m) => (
+                <option key={m} value={m} style={{ backgroundColor: MOTIVO_COLOR[m].bg, color: MOTIVO_COLOR[m].text }}>{m}</option>
+              ))}
             </select>
           </div>
         </div>
@@ -174,7 +179,12 @@ function SeguimientoContenido() {
               <div className="flex justify-between items-start flex-wrap gap-2 mb-1.5">
                 <div>
                   <p className="text-sm font-semibold">
-                    <span className={`inline-block text-[10px] px-1.5 py-0.5 rounded-full font-semibold mr-1.5 align-middle ${MOTIVO_COLOR[s.motivo] || 'bg-surface text-textMuted'}`}>{s.motivo}</span>
+                    <span
+                      className="inline-block text-[10px] px-1.5 py-0.5 rounded-full font-semibold mr-1.5 align-middle"
+                      style={{ backgroundColor: (MOTIVO_COLOR[s.motivo] || {}).bg || 'rgb(var(--color-surface))', color: (MOTIVO_COLOR[s.motivo] || {}).text || 'rgb(var(--color-textMuted))' }}
+                    >
+                      {s.motivo}
+                    </span>
                   </p>
                   <p className="text-[11px] text-textMuted mt-1">{s.fecha} · Registrado por {s.responsable}</p>
                 </div>

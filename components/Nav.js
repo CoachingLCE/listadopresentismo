@@ -61,6 +61,7 @@ export default function Nav() {
     link('/carga', 'Cargar asistencia'),
     gestion && link('/seguimiento', 'Seguimiento'),
     reportes && link('/reportes', 'Reportes'),
+    reportes && link('/emails', 'Emails'),
     historial && link('/historial', 'Historial'),
     accesos && link('/accesos', 'Accesos')
   ].filter(Boolean);

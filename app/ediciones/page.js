@@ -119,6 +119,7 @@ export default function EdicionesPage() {
         <input
           value={filtro} onChange={(e) => setFiltro(e.target.value)}
           placeholder="Buscar por curso o docente…"
+          type="text" name="filtro-ediciones" autoComplete="off" data-1p-ignore data-lpignore="true"
           className="bg-surface2 border border-border rounded-lg px-3 py-2 text-sm flex-1 min-w-[220px]"
         />
         <button

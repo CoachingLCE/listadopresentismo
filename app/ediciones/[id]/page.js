@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useSession } from '../../../lib/useSession';
 import { tienePermisoGestionAcademica, tienePermisoCargarAsistencia, tienePermisoEscribirNotasEstudiante, esRolLimitadoAEdicionesPropias } from '../../../lib/permisos';
 import { nombreCurso, colorCurso } from '../../../lib/cursosLogic';
-import { ESTADOS_PRESENTISMO, COLOR_PRESENTISMO, calcularPorcentaje, calcularResumenPresentismo, agruparPresentismoPorClase } from '../../../lib/presentismoCalculo';
+import { ESTADOS_PRESENTISMO, LABEL_PRESENTISMO, COLOR_PRESENTISMO, COLOR_PRESENTISMO_HEX, calcularPorcentaje, calcularResumenPresentismo, agruparPresentismoPorClase } from '../../../lib/presentismoCalculo';
 import { calcularAlerta, COLOR_ALERTA, COLOR_ESTADO } from '../../../lib/alertas';
 import { ESTADOS_ESTUDIANTE } from '../../../lib/estudiantesCliente';
 import { estadoCalculado, LABEL_ESTADO_EDICION, BADGE_ESTADO_EDICION } from '../../../lib/edicionesEstadoCliente';
@@ -37,11 +37,11 @@ const ICONO_INDICADOR = {
 };
 
 const FILTROS_ESTADO_ESTUDIANTE = [
-  { valor: '', label: 'Todos', icono: '' },
-  { valor: 'Regular', label: 'Regular', icono: '🟢' },
-  { valor: 'Asincronico', label: 'Asincrónico', icono: '🟡' },
-  { valor: 'Baja', label: 'Baja', icono: '🔴' },
-  { valor: 'CambioEdicion', label: 'Cambio edición', icono: '🔵' }
+  { valor: '', label: 'Todos', icono: '', titulo: 'Mostrar todos los estudiantes, sin filtrar por estado.' },
+  { valor: 'Regular', label: 'Regular', icono: '🟢', titulo: 'Estudiantes que están cursando con normalidad.' },
+  { valor: 'Asincronico', label: 'Asincrónico', icono: '🟡', titulo: 'Estudiantes que están cursando de forma asincrónica.' },
+  { valor: 'Baja', label: 'Baja', icono: '🔴', titulo: 'Estudiantes que dejaron de cursar.' },
+  { valor: 'CambioEdicion', label: 'Cambio edición', icono: '🔵', titulo: 'Estudiantes que se incorporaron o cursan distinto (por ejemplo, se inscribieron después del inicio).' }
 ];
 
 function AnilloPresentismo({ pct }) {
@@ -384,6 +384,7 @@ export default function EdicionDetallePage() {
               <input
                 value={busqueda} onChange={(e) => setBusqueda(e.target.value)}
                 placeholder="Buscar estudiante…"
+                type="text" name="filtro-estudiantes" autoComplete="off" data-1p-ignore data-lpignore="true"
                 className="bg-surface2 border border-border rounded-lg px-3 py-1.5 text-xs w-48"
               />
             </div>
@@ -394,6 +395,7 @@ export default function EdicionDetallePage() {
               <button
                 key={f.valor}
                 onClick={() => setFiltroEstado(f.valor)}
+                title={f.titulo}
                 className={`text-xs px-2.5 py-1.5 rounded-full border font-medium transition-colors ${
                   filtroEstado === f.valor
                     ? 'bg-gradient-to-r from-accentPurple to-accentMagenta text-white border-transparent'
@@ -408,7 +410,7 @@ export default function EdicionDetallePage() {
           <div className="flex flex-wrap gap-3 mb-3 text-[10.5px] text-textMuted items-center">
             <span className="font-semibold text-textSec">Referencias:</span>
             {ESTADOS_PRESENTISMO.map((e) => (
-              <span key={e} className="flex items-center gap-1">
+              <span key={e} className="flex items-center gap-1 cursor-help" title={LABEL_PRESENTISMO[e]}>
                 <span className={`w-3 h-3 rounded-full inline-block ${(COLOR_PRESENTISMO[e] || '').split(' ')[0]}`} /> {e}
               </span>
             ))}
@@ -502,10 +504,13 @@ export default function EdicionDetallePage() {
                               title={bloqueadoPorBaja ? 'Estudiante dado de baja — no se cargan clases nuevas.' : undefined}
                               value={estado}
                               onChange={(ev) => marcarPresentismo(est.id, c.id, ev.target.value)}
-                              className={`w-full text-[10.5px] rounded px-0.5 py-1 border-0 text-center disabled:opacity-40 disabled:cursor-not-allowed ${estado ? COLOR_PRESENTISMO[estado] : 'bg-transparent text-textMuted'}`}
+                              style={estado ? { backgroundColor: COLOR_PRESENTISMO_HEX[estado]?.bg, color: COLOR_PRESENTISMO_HEX[estado]?.text } : undefined}
+                              className="w-full text-[10.5px] rounded px-0.5 py-1 border-0 text-center disabled:opacity-40 disabled:cursor-not-allowed bg-transparent text-textMuted"
                             >
-                              <option value="">·</option>
-                              {ESTADOS_PRESENTISMO.map((e) => <option key={e} value={e}>{e}</option>)}
+                              <option value="" style={{ backgroundColor: 'rgb(var(--color-surface2))', color: 'rgb(var(--color-textMuted))' }}>·</option>
+                              {ESTADOS_PRESENTISMO.map((e) => (
+                                <option key={e} value={e} style={{ backgroundColor: COLOR_PRESENTISMO_HEX[e].bg, color: COLOR_PRESENTISMO_HEX[e].text }}>{e}</option>
+                              ))}
                             </select>
                           </td>
                         );

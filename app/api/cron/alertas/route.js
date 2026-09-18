@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { conManejo } from '../../../../lib/apiHandler';
-import { calcularReporteCompleto } from '../../../../lib/alertasReportes';
+import { calcularReporteCompleto, construirDigestAlertas } from '../../../../lib/alertasReportes';
 import { leerClavesEnviadas, marcarComoEnviada } from '../../../../lib/alertasEnviadas';
 import { listarUsuarios } from '../../../../lib/gestionUsuarios';
 import { tienePermisoVerReportes } from '../../../../lib/permisos';
@@ -43,22 +43,12 @@ export const GET = conManejo(async (request) => {
     return NextResponse.json({ ok: true, nuevas: nuevas.length, mensaje: 'Hay alertas nuevas pero no hay destinatarios (SuperAdmin/Coordinación/Académico) con email.' });
   }
 
-  const html = `
-    <div style="font-family:sans-serif;color:#111">
-      <h2 style="margin-bottom:4px">⚠ Alertas de Presentismo ILCE</h2>
-      <p style="color:#555;font-size:13px">Se detectaron ${nuevas.length} situación(es) nueva(s) en Reportes:</p>
-      <ul style="padding-left:18px">
-        ${nuevas.map((a) => `<li style="margin-bottom:10px"><strong>${a.texto}</strong><br/><span style="color:#777;font-size:12px">${a.motivo}</span></li>`).join('')}
-      </ul>
-      <p style="color:#999;font-size:11px">Este es un aviso automático — entrá a Reportes en la app para ver el detalle completo.</p>
-    </div>
-  `;
-  const text = nuevas.map((a) => `${a.texto}\n${a.motivo}`).join('\n\n');
+  const { asunto, html, text } = construirDigestAlertas(nuevas);
 
   let enviado = false;
   let errorEnvio = null;
   try {
-    await enviarMail({ to: destinatarios.join(', '), subject: `⚠ Presentismo ILCE — ${nuevas.length} alerta(s) nueva(s)`, html, text });
+    await enviarMail({ to: destinatarios.join(', '), subject: asunto, html, text });
     enviado = true;
   } catch (err) {
     errorEnvio = err.message;
