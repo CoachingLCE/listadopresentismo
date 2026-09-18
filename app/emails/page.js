@@ -86,13 +86,13 @@ export default function EmailsPage() {
           ) : (
             <div className="bg-successBg/40 border border-successText/30 rounded-2xl p-4 mb-6">
               <p className="text-sm font-semibold text-successText">✓ El envío automático está configurado</p>
-              <p className="text-xs text-textSec mt-1">Todos los días se revisa esto solo y, si hay alertas nuevas, se manda un mail — no hace falta hacer nada acá.</p>
+              <p className="text-xs text-textSec mt-1">Los viernes a la mañana se revisa esto solo y, si hay alertas nuevas de la semana, se manda un mail — no hace falta hacer nada acá.</p>
             </div>
           )}
 
-          {/* Definición de los mails automáticos — por ahora hay uno solo (el resumen diario
-              de alertas de Reportes), armado como tabla para que se vea igual que en las
-              otras apps de ILCE. "Ver mail" muestra la info recién al hacer clic, no antes. */}
+          {/* Definición de los mails automáticos — por ahora hay uno solo (el resumen semanal
+              de alertas de Reportes, los viernes), armado como tabla para que se vea igual
+              que en las otras apps de ILCE. "Ver mail" muestra la info recién al hacer clic. */}
           <div className="mb-8">
             <p className="text-sm font-semibold mb-2.5">Mails automáticos que genera el sistema</p>
             <div className="bg-surface2 border border-border rounded-2xl overflow-hidden">
@@ -108,7 +108,7 @@ export default function EmailsPage() {
                 </thead>
                 <tbody>
                   <tr className="border-b border-border last:border-0 align-top">
-                    <td className="px-4 py-3 text-xs">Todos los días (automático), si hay alertas nuevas</td>
+                    <td className="px-4 py-3 text-xs">Los viernes 9am (automático), si hay alertas nuevas</td>
                     <td className="px-3 py-3">
                       {datos.destinatarios.length === 0 ? (
                         <span className="text-textMuted text-xs">Nadie configurado todavía</span>

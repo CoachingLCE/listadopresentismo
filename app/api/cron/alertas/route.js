@@ -7,9 +7,10 @@ import { listarUsuarios } from '../../../../lib/gestionUsuarios';
 import { tienePermisoVerReportes } from '../../../../lib/permisos';
 import { enviarMail } from '../../../../lib/mailer';
 
-// GET /api/cron/alertas — pensado para que lo llame Vercel Cron (ver vercel.json) una vez
-// por día. Recalcula las alertas de Reportes (misma lógica que ve la pantalla), manda UN
-// solo mail con las que todavía no se avisaron, y las marca como enviadas.
+// GET /api/cron/alertas — pensado para que lo llame Vercel Cron (ver vercel.json) los
+// viernes a las 9am (hora Argentina), como resumen semanal. Recalcula las alertas de
+// Reportes (misma lógica que ve la pantalla), manda UN solo mail con las que todavía no
+// se avisaron desde la última corrida, y las marca como enviadas.
 //
 // Protegido con CRON_SECRET: hay que llamarlo con ?secret=... o con el header
 // "Authorization: Bearer <CRON_SECRET>" (así lo manda Vercel Cron solo). Sin ese secreto

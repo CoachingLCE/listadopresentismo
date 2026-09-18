@@ -2,7 +2,7 @@
 import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useSession } from '../../lib/useSession';
-import { tienePermisoGestionAcademica } from '../../lib/permisos';
+import { tienePermisoVerSeguimiento } from '../../lib/permisos';
 import { MOTIVOS_SEGUIMIENTO, ESTADOS_SEGUIMIENTO } from '../../lib/datosSeguimientoCliente';
 
 const inputCls = 'w-full bg-bg border border-border rounded-lg px-2.5 py-2 text-sm';
@@ -52,13 +52,20 @@ function SeguimientoContenido() {
   const [error, setError] = useState('');
   const [mensaje, setMensaje] = useState('');
 
-  const [motivo, setMotivo] = useState(MOTIVOS_ORDENADOS[0]);
+  const [motivo, setMotivo] = useState('');
   const [observaciones, setObservaciones] = useState('');
   const [estudiante, setEstudiante] = useState(null);
-  const estudianteId = params.get('estudianteId') || '';
-  const edicionId = params.get('edicionId') || '';
+  // estudianteId/edicionId arrancan con lo que venga en la URL (por ejemplo, al entrar
+  // desde "+ Registrar seguimiento" en una edición puntual), pero después se pueden
+  // cambiar desde el buscador de acá abajo sin recargar la página.
+  const [estudianteId, setEstudianteId] = useState(params.get('estudianteId') || '');
+  const [edicionId, setEdicionId] = useState(params.get('edicionId') || '');
 
-  const gestion = usuario ? tienePermisoGestionAcademica(usuario) : false;
+  const [busquedaEst, setBusquedaEst] = useState('');
+  const [resultadosEst, setResultadosEst] = useState([]);
+  const [buscandoEst, setBuscandoEst] = useState(false);
+
+  const gestion = usuario ? tienePermisoVerSeguimiento(usuario) : false;
 
   useEffect(() => {
     if (!cargando && (!usuario || !gestion)) router.push('/ediciones');
@@ -75,6 +82,41 @@ function SeguimientoContenido() {
       .then((data) => setEstudiante(data.estudiante || null))
       .catch(() => {});
   }, [usuario, gestion, estudianteId]);
+
+  // Buscador de estudiante (solo corre cuando todavía no hay uno elegido): reusa el mismo
+  // endpoint de /estudiantes, que ya filtra por lo que cada usuario puede ver (un Docente
+  // solo va a encontrar acá a sus propios estudiantes).
+  useEffect(() => {
+    if (!usuario || !gestion || estudianteId) return;
+    const q = busquedaEst.trim();
+    if (q === '') { setResultadosEst([]); return; }
+    setBuscandoEst(true);
+    const espera = setTimeout(() => {
+      fetchAutenticado(`/api/estudiantes?q=${encodeURIComponent(q)}`)
+        .then((res) => res.json())
+        .then((data) => setResultadosEst(data.estudiantes || []))
+        .catch(() => setResultadosEst([]))
+        .finally(() => setBuscandoEst(false));
+    }, 300);
+    return () => clearTimeout(espera);
+  }, [usuario, gestion, estudianteId, busquedaEst]);
+
+  function elegirEstudiante(es) {
+    setEstudianteId(es.id);
+    setEdicionId(es.edicionId);
+    setBusquedaEst('');
+    setResultadosEst([]);
+    router.replace(`/seguimiento?estudianteId=${es.id}&edicionId=${es.edicionId}`, { scroll: false });
+  }
+
+  function cambiarEstudiante() {
+    setEstudianteId('');
+    setEdicionId('');
+    setEstudiante(null);
+    setMotivo('');
+    setObservaciones('');
+    router.replace('/seguimiento', { scroll: false });
+  }
 
   async function cargarSeguimientos() {
     setCargandoLista(true);
@@ -97,6 +139,8 @@ function SeguimientoContenido() {
   async function crear(e) {
     e.preventDefault();
     setError(''); setMensaje('');
+    if (!estudianteId) { setError('Elegí un estudiante primero.'); return; }
+    if (!motivo) { setError('Elegí un motivo.'); return; }
     try {
       const res = await fetchAutenticado('/api/seguimiento', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -105,6 +149,7 @@ function SeguimientoContenido() {
       const data = await res.json();
       if (!res.ok) { setError(data.error); return; }
       setMensaje('Seguimiento registrado.');
+      setMotivo('');
       setObservaciones('');
       cargarSeguimientos();
     } catch {
@@ -130,7 +175,14 @@ function SeguimientoContenido() {
 
   return (
     <div className="max-w-[800px] mx-auto px-6 pb-16 pt-10">
-      <h1 className="text-xl mb-1">{estudiante ? estudiante.nombre : 'Seguimiento'}</h1>
+      <div className="flex items-center gap-2.5 flex-wrap mb-1">
+        <h1 className="text-xl">{estudiante ? estudiante.nombre : 'Seguimiento'}</h1>
+        {estudiante && (
+          <button type="button" onClick={cambiarEstudiante} className="text-[11px] text-accentTeal underline">
+            Cambiar estudiante
+          </button>
+        )}
+      </div>
       <p className="text-textSec text-sm mb-5">
         {estudiante
           ? 'Registro de incidencias y contacto con este estudiante — para que quede en la app, no solo en un mail.'
@@ -140,32 +192,64 @@ function SeguimientoContenido() {
       {error && <p className="text-dangerText text-sm mb-3">{error}</p>}
       {mensaje && <p className="text-successText text-sm mb-3">{mensaje}</p>}
 
-      <form onSubmit={crear} className="bg-surface2 border border-border rounded-2xl p-5 mb-6 flex flex-col gap-2.5" data-tour="seguimiento-form">
-        <h2 className="text-sm font-semibold mb-1">➕ Nuevo registro</h2>
-        <div className="grid grid-cols-2 gap-2.5">
-          <div>
-            <label className="text-xs text-textSec block mb-1">Registrado por</label>
-            <p className={`${inputCls} bg-surface text-textSec flex items-center`}>{usuario?.nombre}</p>
+      {!estudianteId ? (
+        <div className="bg-surface2 border border-border rounded-2xl p-5 mb-6" data-tour="seguimiento-form">
+          <h2 className="text-sm font-semibold mb-1">➕ Nuevo registro</h2>
+          <p className="text-textSec text-xs mb-3">Primero elegí de qué estudiante cargado es el registro.</p>
+          <input
+            value={busquedaEst} onChange={(e) => setBusquedaEst(e.target.value)}
+            type="search" placeholder="Buscar estudiante por nombre…" autoComplete="off"
+            className={inputCls}
+          />
+          {busquedaEst.trim() !== '' && (
+            <div className="flex flex-col gap-1.5 mt-2.5 max-h-64 overflow-y-auto">
+              {buscandoEst ? (
+                <p className="text-textSec text-xs px-1">Buscando…</p>
+              ) : resultadosEst.length === 0 ? (
+                <p className="text-textMuted text-xs px-1">No se encontraron estudiantes.</p>
+              ) : (
+                resultadosEst.map((es) => (
+                  <button
+                    key={es.id} type="button" onClick={() => elegirEstudiante(es)}
+                    className="text-left bg-surface border border-border rounded-lg px-3 py-2 text-sm hover:border-accentTeal transition-colors"
+                  >
+                    <span className="font-medium">{es.nombre}</span>
+                    <span className="text-textSec text-xs ml-2">{es.edicionCurso} — Edición {es.edicionNumero}</span>
+                  </button>
+                ))
+              )}
+            </div>
+          )}
+        </div>
+      ) : (
+        <form onSubmit={crear} className="bg-surface2 border border-border rounded-2xl p-5 mb-6 flex flex-col gap-2.5" data-tour="seguimiento-form">
+          <h2 className="text-sm font-semibold mb-1">➕ Nuevo registro</h2>
+          <div className="grid grid-cols-2 gap-2.5">
+            <div>
+              <label className="text-xs text-textSec block mb-1">Registrado por</label>
+              <p className={`${inputCls} bg-surface text-textSec flex items-center`}>{usuario?.nombre}</p>
+            </div>
+            <div>
+              <label className="text-xs text-textSec block mb-1">Motivo</label>
+              <select
+                value={motivo} onChange={(e) => setMotivo(e.target.value)}
+                style={motivo ? { backgroundColor: (MOTIVO_COLOR[motivo] || {}).bg, color: (MOTIVO_COLOR[motivo] || {}).text } : undefined}
+                className="w-full border border-border rounded-lg px-2.5 py-2 text-sm font-medium"
+              >
+                <option value="" disabled>Seleccionar…</option>
+                {MOTIVOS_ORDENADOS.map((m) => (
+                  <option key={m} value={m} style={{ backgroundColor: MOTIVO_COLOR[m].bg, color: MOTIVO_COLOR[m].text }}>{m}</option>
+                ))}
+              </select>
+            </div>
           </div>
           <div>
-            <label className="text-xs text-textSec block mb-1">Motivo</label>
-            <select
-              value={motivo} onChange={(e) => setMotivo(e.target.value)}
-              style={{ backgroundColor: (MOTIVO_COLOR[motivo] || {}).bg, color: (MOTIVO_COLOR[motivo] || {}).text }}
-              className="w-full border border-border rounded-lg px-2.5 py-2 text-sm font-medium"
-            >
-              {MOTIVOS_ORDENADOS.map((m) => (
-                <option key={m} value={m} style={{ backgroundColor: MOTIVO_COLOR[m].bg, color: MOTIVO_COLOR[m].text }}>{m}</option>
-              ))}
-            </select>
+            <label className="text-xs text-textSec block mb-1">Observaciones</label>
+            <textarea value={observaciones} onChange={(e) => setObservaciones(e.target.value)} rows={3} className={inputCls} />
           </div>
-        </div>
-        <div>
-          <label className="text-xs text-textSec block mb-1">Observaciones</label>
-          <textarea value={observaciones} onChange={(e) => setObservaciones(e.target.value)} rows={3} className={inputCls} />
-        </div>
-        <button type="submit" className={`${btnCls} self-start`}>Registrar</button>
-      </form>
+          <button type="submit" className={`${btnCls} self-start`}>Registrar</button>
+        </form>
+      )}
 
       <h2 className="text-sm font-semibold mb-3">Registros ({seguimientos.length})</h2>
       {cargandoLista ? (
@@ -186,7 +270,10 @@ function SeguimientoContenido() {
                       {s.motivo}
                     </span>
                   </p>
-                  <p className="text-[11px] text-textMuted mt-1">{s.fecha} · Registrado por {s.responsable}</p>
+                  <p className="text-[11px] text-textMuted mt-1">
+                    {s.fecha} · Registrado por {s.responsable}
+                    {s.edicionCurso && ` · ${s.edicionCurso} — Edición ${s.edicionNumero}`}
+                  </p>
                 </div>
                 <select value={s.estado} onChange={(e) => actualizarEstado(s.id, e.target.value)} className={`text-[11px] px-2 py-1 rounded-full font-semibold border-0 ${badgeEstado[s.estado]}`}>
                   {ESTADOS_SEGUIMIENTO.map((e) => <option key={e} value={e}>{e}</option>)}

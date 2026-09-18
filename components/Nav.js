@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useSession } from '../lib/useSession';
-import { tienePermisoGestionAcademica, tienePermisoVerHistorial, tienePermisoAccesos, tienePermisoVerReportes, puedeVerComoOtro } from '../lib/permisos';
+import { tienePermisoGestionAcademica, tienePermisoVerHistorial, tienePermisoAccesos, tienePermisoVerReportes, tienePermisoVerSeguimiento, puedeVerComoOtro } from '../lib/permisos';
 import ThemeSelector from './ThemeSelector';
 import CambiarPasswordModal from './CambiarPasswordModal';
 import Logo from './Logo';
@@ -52,6 +52,7 @@ export default function Nav() {
   const historial = tienePermisoVerHistorial(usuario);
   const accesos = tienePermisoAccesos(usuario);
   const reportes = tienePermisoVerReportes(usuario);
+  const seguimiento = tienePermisoVerSeguimiento(usuario);
 
   const links = [
     link('/ediciones', 'Ediciones'),
@@ -59,7 +60,7 @@ export default function Nav() {
     gestion && link('/docentes', 'Equipo docente'),
     gestion && link('/estudiantes', 'Estudiantes'),
     link('/carga', 'Cargar asistencia'),
-    gestion && link('/seguimiento', 'Seguimiento'),
+    seguimiento && link('/seguimiento', 'Seguimiento'),
     reportes && link('/reportes', 'Reportes'),
     reportes && link('/emails', 'Emails'),
     historial && link('/historial', 'Historial'),

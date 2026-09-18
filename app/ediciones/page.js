@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useSession } from '../../lib/useSession';
 import { tienePermisoGestionAcademica, esSuperAdmin } from '../../lib/permisos';
 import { nombreCurso, colorCurso } from '../../lib/cursosLogic';
-import { estadoCalculado, LABEL_ESTADO_EDICION, BADGE_ESTADO_EDICION } from '../../lib/edicionesEstadoCliente';
+import { estadoCalculado, LABEL_ESTADO_EDICION, BADGE_ESTADO_EDICION, ESTADOS_EDICION_CALCULADOS } from '../../lib/edicionesEstadoCliente';
 
 export default function EdicionesPage() {
   const { usuario, cargando, fetchAutenticado } = useSession();
@@ -15,7 +15,10 @@ export default function EdicionesPage() {
   const [error, setError] = useState('');
   const [filtro, setFiltro] = useState('');
   const [filtroCurso, setFiltroCurso] = useState('');
-  const [soloActivas, setSoloActivas] = useState(true);
+  // Antes arrancaba mostrando solo las Activas y había que destildar un botón para ver el
+  // resto — el equipo académico necesita ver TODAS las cargadas de entrada, así que ahora
+  // arranca en "Todas" y el filtro de estado es para achicar la vista, no al revés.
+  const [filtroEstado, setFiltroEstado] = useState('');
   const [cargandoEjemplo, setCargandoEjemplo] = useState(false);
   const [borrandoId, setBorrandoId] = useState('');
 
@@ -92,14 +95,28 @@ export default function EdicionesPage() {
       .sort((a, b) => a.nombre.localeCompare(b.nombre));
   }, [ediciones]);
 
+  // Chips de estado: Todas + una por cada estado calculado que efectivamente tenga
+  // ediciones, con su cantidad — reemplaza al viejo botón "Solo activas" (que arrancaba
+  // prendido y escondía todo lo que no era Activa de entrada).
+  const chipsEstado = useMemo(() => {
+    const cuentas = new Map();
+    for (const e of ediciones) {
+      const est = estadoCalculado(e);
+      cuentas.set(est, (cuentas.get(est) || 0) + 1);
+    }
+    return ESTADOS_EDICION_CALCULADOS
+      .filter((est) => cuentas.has(est))
+      .map((est) => ({ id: est, label: LABEL_ESTADO_EDICION[est] || est, cantidad: cuentas.get(est) }));
+  }, [ediciones]);
+
   const filtradas = useMemo(() => {
     const q = filtro.trim().toLowerCase();
     return ediciones
-      .filter((e) => !soloActivas || estadoCalculado(e) === 'Activa')
+      .filter((e) => !filtroEstado || estadoCalculado(e) === filtroEstado)
       .filter((e) => !filtroCurso || e.curso === filtroCurso)
       .filter((e) => !q || nombreCurso(e.curso).toLowerCase().includes(q) || e.docenteNombre.toLowerCase().includes(q) || e.staffNombre.toLowerCase().includes(q))
       .sort((a, b) => (b.fechaInicio || '').localeCompare(a.fechaInicio || ''));
-  }, [ediciones, filtro, filtroCurso, soloActivas]);
+  }, [ediciones, filtro, filtroCurso, filtroEstado]);
 
   if (cargando || !usuario) return null;
 
@@ -135,18 +152,32 @@ export default function EdicionesPage() {
           type="search" name="filtro-ediciones" autoComplete="off" data-1p-ignore data-lpignore="true"
           className="bg-surface2 border border-border rounded-lg px-3 py-2 text-sm flex-1 min-w-[220px]"
         />
-        <button
-          type="button"
-          onClick={() => setSoloActivas((v) => !v)}
-          className={`h-[38px] text-sm px-3.5 rounded-lg border font-medium transition-colors flex items-center gap-1.5 ${
-            soloActivas
-              ? 'bg-gradient-to-r from-accentPurple to-accentMagenta text-white border-transparent'
-              : 'bg-surface2 border-border text-textSec hover:border-accentTeal'
-          }`}
-        >
-          {soloActivas ? '✓' : ''} Solo activas
-        </button>
       </div>
+
+      {/* Estado: arranca en "Todas" (antes arrancaba en "Solo activas" y el equipo
+          académico no veía las Próximas/Finalizadas/Suspendidas si no destildaba algo). */}
+      {chipsEstado.length > 1 && (
+        <div className="flex gap-1.5 mb-2.5 flex-wrap">
+          <button
+            type="button" onClick={() => setFiltroEstado('')}
+            className={`text-xs px-3 py-1.5 rounded-full font-medium border transition-colors ${
+              !filtroEstado ? 'bg-gradient-to-r from-accentPurple to-accentMagenta text-white border-transparent' : 'bg-surface2 border-border text-textSec hover:border-accentTeal'
+            }`}
+          >
+            Todas <span className="opacity-70">{ediciones.length}</span>
+          </button>
+          {chipsEstado.map((c) => (
+            <button
+              key={c.id} type="button" onClick={() => setFiltroEstado(c.id)}
+              className={`text-xs px-3 py-1.5 rounded-full font-medium border transition-colors ${
+                filtroEstado === c.id ? 'bg-gradient-to-r from-accentPurple to-accentMagenta text-white border-transparent' : 'bg-surface2 border-border text-textSec hover:border-accentTeal'
+              }`}
+            >
+              {c.label} <span className="opacity-70">{c.cantidad}</span>
+            </button>
+          ))}
+        </div>
+      )}
 
       {chipsCurso.length > 1 && (
         <div className="flex gap-1.5 mb-5 flex-wrap">

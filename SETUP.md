@@ -98,9 +98,9 @@ Al importar este proyecto a Vercel, en **Settings → Environment Variables** ag
 - `GMAIL_USER` / `GMAIL_APP_PASSWORD` → la cuenta de Gmail desde la que se mandan los avisos automáticos de alertas (ver punto 6). `GMAIL_APP_PASSWORD` es una "contraseña de aplicación" (no la contraseña normal de la cuenta), se genera en https://myaccount.google.com/apppasswords con la verificación en 2 pasos activada.
 - `CRON_SECRET` → un texto largo y random — protege el endpoint `/api/cron/alertas` para que solo Vercel Cron (o vos a mano) puedan dispararlo.
 
-## 6. Alertas automáticas por mail (nuevo desde v0.3.0)
+## 6. Alertas automáticas por mail (nuevo desde v0.3.0, resumen semanal desde v0.3.9)
 
-Todos los días (por defecto a las 12:00 UTC — 9am en Argentina), Vercel llama solo a `/api/cron/alertas`, que recalcula las mismas alertas que se ven en Reportes (ausentismo ≥50% en una clase puntual, bajas ≥30% o presentismo <70% en una edición) y manda UN mail con las que todavía no se avisaron a todos los usuarios activos con rol SuperAdmin, Coordinación o Académico.
+Los viernes (por defecto a las 12:00 UTC — 9am en Argentina), Vercel llama solo a `/api/cron/alertas`, que recalcula las mismas alertas que se ven en Reportes (ausentismo ≥50% en una clase puntual, bajas ≥30% o presentismo <70% en una edición) y manda UN mail-resumen semanal con las que todavía no se avisaron a todos los usuarios activos con rol SuperAdmin, Coordinación o Académico.
 
 Para que funcione hace falta:
 1. Crear la pestaña `AlertasEnviadas` en el Sheet (ver arriba).
