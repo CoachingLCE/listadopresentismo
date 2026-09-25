@@ -17,14 +17,43 @@ function formatearFecha(iso) {
   } catch { return iso; }
 }
 
+// Modal "Ver mail" — mismo criterio que en Seguimiento Lead Estudiante: se abre recién al hacer
+// clic (no ocupa espacio en la tabla) y muestra el HTML real dentro de un iframe.
+function ModalVerMail({ mail, onClose }) {
+  if (!mail) return null;
+  return (
+    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-3 sm:p-4" onClick={onClose}>
+      <div className="bg-surface2 border border-border rounded-2xl w-full max-w-3xl h-[94vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
+        <div className="p-4 sm:p-5 border-b border-border shrink-0">
+          <div className="flex items-start justify-between gap-3 mb-2">
+            <p className="text-sm font-bold">✉️ {mail.tipo}</p>
+            <button onClick={onClose} className="text-textMuted hover:text-text text-sm">✕</button>
+          </div>
+          <div className="text-xs text-textSec flex flex-wrap gap-x-4 gap-y-0.5">
+            <p><span className="text-textMuted">De:</span> {mail.remitente}</p>
+            <p><span className="text-textMuted">Para:</span> {mail.para}</p>
+            <p><span className="text-textMuted">Asunto:</span> {mail.asunto}</p>
+          </div>
+        </div>
+        <div className="p-3 sm:p-5 bg-bg flex-1 min-h-0">
+          {mail.html ? (
+            <iframe title="Vista previa del mail" srcDoc={mail.html} className="w-full h-full bg-white rounded-lg border border-border" />
+          ) : (
+            <p className="text-textMuted text-sm">Sin contenido guardado.</p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function EmailsPage() {
   const { usuario, cargando, fetchAutenticado } = useSession();
   const router = useRouter();
   const [datos, setDatos] = useState(null);
   const [cargandoDatos, setCargandoDatos] = useState(true);
   const [error, setError] = useState('');
-  const [verPlantilla, setVerPlantilla] = useState(false);
-  const [envioAbiertoId, setEnvioAbiertoId] = useState(null);
+  const [mailAVer, setMailAVer] = useState(null);
   const [busquedaRegistro, setBusquedaRegistro] = useState('');
 
   const puede = usuario ? tienePermisoVerReportes(usuario) : false;
@@ -62,7 +91,7 @@ export default function EmailsPage() {
   if (cargando || !usuario || !puede) return null;
 
   return (
-    <div className="max-w-[900px] mx-auto px-6 pb-16 pt-10">
+    <div className="max-w-[1300px] mx-auto px-6 pb-16 pt-10">
       <h1 className="text-xl mb-1">Emails</h1>
       <p className="text-textSec text-sm mb-5">Qué mails automáticos manda el sistema, y el registro real de cada envío.</p>
 
@@ -91,60 +120,73 @@ export default function EmailsPage() {
           )}
 
           {/* Definición de los mails automáticos — por ahora hay uno solo (el resumen semanal
-              de alertas de Reportes, los viernes), armado como tabla para que se vea igual
-              que en las otras apps de ILCE. "Ver mail" muestra la info recién al hacer clic. */}
+              de alertas de Reportes, los viernes), armado como tabla con el mismo formato que
+              en las otras apps de ILCE (Cuándo se envía / A quién / De / Asunto / Tipo). "Ver
+              mail" abre una ventana con el HTML real, en vez de desplegarse dentro de la fila. */}
           <div className="mb-8">
             <p className="text-sm font-semibold mb-2.5">Mails automáticos que genera el sistema</p>
             <div className="bg-surface2 border border-border rounded-2xl overflow-hidden">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="text-left text-textMuted text-xs border-b border-border">
-                    <th className="px-4 py-2.5 font-medium">Cuándo se envía</th>
-                    <th className="px-3 py-2.5 font-medium">A quién</th>
-                    <th className="px-3 py-2.5 font-medium">Asunto</th>
-                    <th className="px-3 py-2.5 font-medium">Tipo</th>
-                    <th className="px-3 py-2.5 font-medium w-24"></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr className="border-b border-border last:border-0 align-top">
-                    <td className="px-4 py-3 text-xs">Los viernes 9am (automático), si hay alertas nuevas</td>
-                    <td className="px-3 py-3">
-                      {datos.destinatarios.length === 0 ? (
-                        <span className="text-textMuted text-xs">Nadie configurado todavía</span>
-                      ) : (
-                        <div className="flex flex-wrap gap-1">
-                          {datos.destinatarios.map((email) => (
-                            <span key={email} className="text-[10.5px] px-1.5 py-0.5 rounded-full bg-surface border border-border text-textSec">{email}</span>
-                          ))}
-                        </div>
-                      )}
-                    </td>
-                    <td className="px-3 py-3 text-xs">{datos.vistaPrevia?.asunto || <span className="text-textMuted">— (sin alertas para armar un ejemplo)</span>}</td>
-                    <td className="px-3 py-3">
-                      <span className="text-[10.5px] px-2 py-0.5 rounded-full font-semibold bg-infoBg text-infoText whitespace-nowrap">Resumen de alertas</span>
-                    </td>
-                    <td className="px-3 py-3 text-right">
-                      {datos.vistaPrevia && (
-                        <button onClick={() => setVerPlantilla((v) => !v)} className="text-xs text-accentTeal hover:underline font-medium whitespace-nowrap">
-                          {verPlantilla ? 'Ocultar' : 'Ver mail →'}
-                        </button>
-                      )}
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-              {verPlantilla && datos.vistaPrevia && (
-                <div className="border-t border-border">
-                  <div className="px-4 py-2.5 border-b border-border bg-bg/40">
-                    <p className="text-[11px] text-textMuted">Para: {datos.destinatarios.join(', ') || '—'}</p>
-                    <p className="text-xs font-semibold mt-0.5">{datos.vistaPrevia.asunto}</p>
-                  </div>
-                  <div className="p-4 bg-white" dangerouslySetInnerHTML={{ __html: datos.vistaPrevia.html }} />
-                </div>
-              )}
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="text-left text-textMuted text-xs border-b border-border">
+                      <th className="px-4 py-2.5 font-medium">Cuándo se envía</th>
+                      <th className="px-3 py-2.5 font-medium">A quién</th>
+                      <th className="px-3 py-2.5 font-medium">De</th>
+                      <th className="px-3 py-2.5 font-medium">Asunto</th>
+                      <th className="px-3 py-2.5 font-medium">Tipo</th>
+                      <th className="px-3 py-2.5 font-medium w-24"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr
+                      className={`border-b border-border last:border-0 align-top ${datos.vistaPrevia ? 'cursor-pointer hover:bg-bg/40' : ''}`}
+                      onClick={() => datos.vistaPrevia && setMailAVer({
+                        tipo: 'Resumen de alertas', remitente: 'Instituto ILCE',
+                        para: datos.destinatarios.join(', ') || '—',
+                        asunto: datos.vistaPrevia.asunto, html: datos.vistaPrevia.html
+                      })}
+                    >
+                      <td className="px-4 py-3 text-xs">Los viernes 9am (automático), si hay alertas nuevas</td>
+                      <td className="px-3 py-3">
+                        {datos.destinatarios.length === 0 ? (
+                          <span className="text-textMuted text-xs">Nadie configurado todavía</span>
+                        ) : (
+                          <div className="flex flex-wrap gap-1">
+                            {datos.destinatarios.map((email) => (
+                              <span key={email} className="text-[10.5px] px-1.5 py-0.5 rounded-full bg-surface border border-border text-textSec">{email}</span>
+                            ))}
+                          </div>
+                        )}
+                      </td>
+                      <td className="px-3 py-3 text-xs text-textSec whitespace-nowrap">Instituto ILCE</td>
+                      <td className="px-3 py-3 text-xs">{datos.vistaPrevia?.asunto || <span className="text-textMuted">— (sin alertas para armar un ejemplo)</span>}</td>
+                      <td className="px-3 py-3">
+                        <span className="text-[10.5px] px-2 py-0.5 rounded-full font-semibold bg-infoBg text-infoText whitespace-nowrap">Resumen de alertas</span>
+                      </td>
+                      <td className="px-3 py-3 text-right">
+                        {datos.vistaPrevia && (
+                          <button
+                            type="button"
+                            onClick={(e) => { e.stopPropagation(); setMailAVer({
+                              tipo: 'Resumen de alertas', remitente: 'Instituto ILCE',
+                              para: datos.destinatarios.join(', ') || '—',
+                              asunto: datos.vistaPrevia.asunto, html: datos.vistaPrevia.html
+                            }); }}
+                            className="text-xs text-accentTeal hover:underline font-medium whitespace-nowrap"
+                          >
+                            Ver mail →
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
+
+          <ModalVerMail mail={mailAVer} onClose={() => setMailAVer(null)} />
 
           <ListaAlertas titulo="Pendientes de aviso" items={datos.pendientes} vacio="No hay alertas nuevas en este momento." />
           <ListaAlertas titulo="Ya avisadas" items={datos.enviadas} vacio="Todavía no se mandó ningún aviso." />
@@ -165,24 +207,42 @@ export default function EmailsPage() {
             ) : registroFiltrado.length === 0 ? (
               <p className="text-textMuted text-sm bg-surface2 border border-border rounded-xl p-4">Nada coincide con esa búsqueda.</p>
             ) : (
-              <div className="flex flex-col gap-2">
-                {registroFiltrado.map((r) => {
-                  const abierto = envioAbiertoId === r.id;
-                  return (
-                    <div key={r.id} className="bg-surface2 border border-border rounded-xl overflow-hidden">
-                      <button onClick={() => setEnvioAbiertoId(abierto ? null : r.id)} className="w-full flex items-center justify-between gap-3 px-3.5 py-2.5 text-left">
-                        <div className="min-w-0">
-                          <p className="text-sm font-medium truncate">{r.asunto || '(sin asunto)'}</p>
-                          <p className="text-xs text-textMuted truncate">{formatearFecha(r.fecha)} · {r.destinatarios.join(', ') || '—'}{r.cantidadAlertas !== '' ? ` · ${r.cantidadAlertas} alerta(s)` : ''}</p>
-                        </div>
-                        <span className="text-xs text-accentTeal font-medium shrink-0">{abierto ? 'Ocultar' : 'Ver mail →'}</span>
-                      </button>
-                      {abierto && (
-                        <div className="border-t border-border p-4 bg-white" dangerouslySetInnerHTML={{ __html: r.html || '<p style="color:#888">Sin contenido guardado.</p>' }} />
-                      )}
-                    </div>
-                  );
-                })}
+              <div className="bg-surface2 border border-border rounded-2xl overflow-hidden">
+                <div className="overflow-x-auto max-h-[500px] overflow-y-auto">
+                  <table className="w-full text-sm">
+                    <thead className="sticky top-0 bg-surface2 z-10">
+                      <tr className="text-left text-textMuted text-xs border-b border-border">
+                        <th className="px-4 py-2.5 font-medium whitespace-nowrap">Fecha</th>
+                        <th className="px-3 py-2.5 font-medium">Asunto</th>
+                        <th className="px-3 py-2.5 font-medium">Destinatarios</th>
+                        <th className="px-3 py-2.5 font-medium whitespace-nowrap">Alertas</th>
+                        <th className="px-3 py-2.5 font-medium w-24"></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {registroFiltrado.map((r) => (
+                        <tr key={r.id} className="border-b border-border last:border-0">
+                          <td className="px-4 py-2.5 text-xs text-textSec whitespace-nowrap">{formatearFecha(r.fecha)}</td>
+                          <td className="px-3 py-2.5 text-xs">{r.asunto || '(sin asunto)'}</td>
+                          <td className="px-3 py-2.5 text-xs text-textSec">{r.destinatarios.join(', ') || '—'}</td>
+                          <td className="px-3 py-2.5 text-xs text-textSec">{r.cantidadAlertas !== '' ? r.cantidadAlertas : '—'}</td>
+                          <td className="px-3 py-2.5 text-right">
+                            <button
+                              type="button"
+                              onClick={() => setMailAVer({
+                                tipo: 'Resumen de alertas', remitente: 'Instituto ILCE',
+                                para: r.destinatarios.join(', ') || '—', asunto: r.asunto, html: r.html
+                              })}
+                              className="text-xs text-accentTeal hover:underline font-medium whitespace-nowrap"
+                            >
+                              Ver mail →
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             )}
           </div>

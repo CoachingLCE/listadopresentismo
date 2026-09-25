@@ -13,6 +13,15 @@ const inputErrCls = 'w-full bg-bg border border-dangerText rounded-lg px-3 py-2.
 const btnCls = 'bg-gradient-to-r from-accentPurple to-accentMagenta text-white rounded-lg px-5 py-2.5 text-sm font-semibold shadow-sm shadow-accentPurple/20 transition-transform hover:brightness-110 active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none';
 const btnSecCls = 'bg-transparent border border-border rounded-lg px-5 py-2.5 text-sm font-medium text-textSec transition-colors hover:border-accentTeal hover:text-text';
 
+// Las fechas viven como AAAA-MM-DD (lo que da <input type="date">) — para mostrarlas se convierten
+// siempre a DD/MM/AAAA (formato argentino), nunca se muestra el ISO crudo.
+function formatFechaDDMMAAAA(iso) {
+  if (!iso) return '';
+  const [aaaa, mm, dd] = iso.split('-');
+  if (!aaaa || !mm || !dd) return iso;
+  return `${dd}/${mm}/${aaaa}`;
+}
+
 function Seccion({ titulo, descripcion, children }) {
   return (
     <div className="border-b border-border pb-5 mb-5 last:border-0 last:pb-0 last:mb-0">
@@ -142,15 +151,15 @@ function VistaPrevia({ curso, numero, docenteNombre, staffNombre, fechaInicio, f
       <div className="flex flex-col">
         <FilaPreview label="Docente">{docenteNombre || '— Sin asignar —'}</FilaPreview>
         <FilaPreview label="Staff">{staffNombre || '— Sin asignar —'}</FilaPreview>
-        <FilaPreview label="Fecha de inicio">{fechaInicio || '—'}</FilaPreview>
-        <FilaPreview label="Fecha de finalización">{fechaFinPreview || '—'}</FilaPreview>
+        <FilaPreview label="Fecha de inicio">{formatFechaDDMMAAAA(fechaInicio) || '—'}</FilaPreview>
+        <FilaPreview label="Fecha de finalización">{formatFechaDDMMAAAA(fechaFinPreview) || '—'}</FilaPreview>
       </div>
 
       {calendarioPreview && (
         <div className="mt-3 pt-3 border-t border-border">
           <p className="text-[11px] text-textMuted">
             Se van a generar <strong className="text-text">{calendarioPreview.length} clases</strong>
-            {cursoInfo && cursoInfo.totalClases === 48 && !totalOverride && ' (3 cuatrimestres de 16, con receso entre cada uno)'}.
+            {cursoInfo && cursoInfo.totalClases === 48 && !totalOverride && ' (3 cuatrimestres de 16, con receso de dos semanas entre cada uno)'}.
           </p>
           <button
             type="button" onClick={() => setVerCalendario((v) => !v)}
@@ -162,7 +171,7 @@ function VistaPrevia({ curso, numero, docenteNombre, staffNombre, fechaInicio, f
             <div className="flex flex-wrap gap-1 max-h-32 overflow-y-auto mt-2">
               {calendarioPreview.map((c) => (
                 <span key={c.numero} className="text-[10.5px] bg-bg border border-border rounded px-1.5 py-0.5 text-textMuted">
-                  #{c.numero} {c.fecha}
+                  #{c.numero} {formatFechaDDMMAAAA(c.fecha)}
                 </span>
               ))}
             </div>
@@ -325,7 +334,7 @@ export default function NuevaEdicionPage() {
               </Campo>
               <Campo label="Fecha de finalización (estimada)">
                 <div className="w-full bg-bg border border-border rounded-lg px-3 py-2.5 text-sm text-textSec">
-                  {fechaFinPreview || '— Elegí la fecha de inicio —'}
+                  {formatFechaDDMMAAAA(fechaFinPreview) || '— Elegí la fecha de inicio —'}
                 </div>
               </Campo>
             </div>
