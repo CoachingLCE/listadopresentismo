@@ -84,11 +84,13 @@ export default function AccesosPage() {
         body: JSON.stringify(cambios)
       });
       const data = await res.json();
-      if (!res.ok) { setError(data.error); return; }
+      if (!res.ok) { setError(data.error); return { ok: false, error: data.error }; }
       setMensaje(`${email} actualizado.`);
-      cargarUsuarios();
+      await cargarUsuarios();
+      return { ok: true };
     } catch {
       setError('Error de conexión.');
+      return { ok: false, error: 'Error de conexión.' };
     }
   }
 
@@ -201,6 +203,27 @@ function FilaUsuario({ u, puedeEditar, onActualizar }) {
   const [rol, setRol] = useState(rolMasAlto(u.roles));
   const [nuevaPassword, setNuevaPassword] = useState('');
   const [verPassword, setVerPassword] = useState(false);
+  const [guardandoRol, setGuardandoRol] = useState(false);
+  const [avisoRol, setAvisoRol] = useState(null); // { ok, texto } | null
+
+  // Si el guardado falló (o lo hizo otra persona desde otra pestaña), el radio
+  // vuelve a reflejar el rol REAL apenas se refresca la lista — así el fallo se
+  // ve enseguida en vez de quedar "pegado" en lo último que se clickeó.
+  useEffect(() => {
+    setRol(rolMasAlto(u.roles));
+  }, [u.roles.join(',')]);
+
+  async function guardarRol() {
+    setGuardandoRol(true);
+    setAvisoRol(null);
+    const resultado = await onActualizar(u.email, { roles: [rol] });
+    setGuardandoRol(false);
+    setAvisoRol(
+      resultado.ok
+        ? { ok: true, texto: '✓ Rol guardado' }
+        : { ok: false, texto: resultado.error || 'No se pudo guardar.' }
+    );
+  }
 
   return (
     <div className="bg-surface2 border border-border rounded-xl p-3.5">
@@ -224,7 +247,14 @@ function FilaUsuario({ u, puedeEditar, onActualizar }) {
               {r}
             </label>
           ))}
-          <button className={btnSecCls} onClick={() => onActualizar(u.email, { roles: [rol] })}>Guardar rol</button>
+          <div className="flex flex-col gap-1">
+            <button className={btnSecCls} onClick={guardarRol} disabled={guardandoRol}>
+              {guardandoRol ? 'Guardando…' : 'Guardar rol'}
+            </button>
+            {avisoRol && (
+              <p className={`text-[11px] ${avisoRol.ok ? 'text-successText' : 'text-dangerText'}`}>{avisoRol.texto}</p>
+            )}
+          </div>
           <button className={btnSecCls} onClick={() => onActualizar(u.email, { activo: !u.activo })}>
             {u.activo ? 'Desactivar' : 'Reactivar'}
           </button>

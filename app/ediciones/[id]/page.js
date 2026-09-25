@@ -154,20 +154,33 @@ export default function EdicionDetallePage() {
   }
 
   async function marcarPresentismo(estudianteId, claseId, estado) {
-    // Optimista: actualiza en pantalla antes de que vuelva la respuesta.
+    // Optimista: actualiza en pantalla antes de que vuelva la respuesta. Ojo: NO se recarga
+    // toda la pantalla acá (antes se hacía un cargarDetalle() completo para "Baja"/"Asinc",
+    // que tira abajo toda la tabla al esqueleto de carga y da la sensación de que el click
+    // "no tomó" o se perdió el scroll horizontal). En vez de eso, replicamos en el estado
+    // local exactamente la misma regla que aplica el servidor (ver /api/presentismo):
+    // "Baja" o "Asinc" en una clase puntual también actualiza el Estado general del
+    // estudiante, y una "Baja" ya cargada nunca se pisa con un "Asinc" posterior.
     setDatos((prev) => {
       if (!prev) return prev;
       const otras = prev.presentismo.filter((p) => !(p.estudianteId === estudianteId && p.claseId === claseId));
-      return { ...prev, presentismo: [...otras, { estudianteId, claseId, edicionId: id, estado, notas: '' }] };
+      const presentismo = [...otras, { estudianteId, claseId, edicionId: id, estado, notas: '' }];
+      let estudiantes = prev.estudiantes;
+      if (estado === 'Baja' || estado === 'Asinc') {
+        const nuevoEstado = estado === 'Baja' ? 'Baja' : 'Asincronico';
+        estudiantes = prev.estudiantes.map((e) =>
+          e.id === estudianteId && e.estado !== 'Baja' && e.estado !== nuevoEstado
+            ? { ...e, estado: nuevoEstado }
+            : e
+        );
+      }
+      return { ...prev, presentismo, estudiantes };
     });
     try {
       await fetchAutenticado('/api/presentismo', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ estudianteId, claseId, edicionId: id, estado })
       });
-      // "Baja" o "Asinc" en una clase actualiza solo el Estado general del estudiante del
-      // lado del servidor — recargamos para que se vea reflejado en la columna Estado.
-      if (estado === 'Baja' || estado === 'Asinc') cargarDetalle();
     } catch {
       setError('No se pudo guardar ese casillero — probá de nuevo.');
     }
@@ -261,73 +274,6 @@ export default function EdicionDetallePage() {
 
       {error && <p className="text-dangerText text-sm mb-3">{error}</p>}
       {mensaje && <p className="text-successText text-sm mb-3">{mensaje}</p>}
-
-      {/* ---------- Seguimiento de Asistencia ---------- */}
-      {estudiantes.length > 0 && (
-        <div className="bg-surface2 border border-border rounded-2xl p-4 sm:p-5 mb-6">
-          <button type="button" onClick={() => setDashboardAbierto((v) => !v)} className="w-full text-left flex items-center justify-between gap-2 group">
-            <div>
-              <h2 className="text-base font-semibold mb-0.5 group-hover:text-accentTeal transition-colors">Seguimiento de Asistencia</h2>
-              <p className="text-textMuted text-xs">Visualizá rápidamente la asistencia, ausencias y evolución de los estudiantes.</p>
-            </div>
-            <span className="text-textMuted text-xs shrink-0">{dashboardAbierto ? '▲ Colapsar' : '▼ Ver'}</span>
-          </button>
-
-          {dashboardAbierto && (!hayAsistenciaCargada ? (
-            <div className="text-center py-8 bg-bg border border-dashed border-border rounded-xl">
-              <p className="text-sm font-medium text-textSec mb-1">Todavía no hay registros de asistencia</p>
-              <p className="text-xs text-textMuted">Cuando se carguen asistencias, vas a poder ver las métricas y evolución acá.</p>
-            </div>
-          ) : (
-            <>
-              {/* Indicadores por estado */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 mb-4">
-                {Object.entries(ICONO_INDICADOR).map(([campo, cfg]) => (
-                  <div key={campo} className={`rounded-xl border border-border p-3 ${cfg.bg}`}>
-                    <p className="text-[11px] text-textSec font-medium flex items-center gap-1">{cfg.icono} {cfg.label}</p>
-                    <p className={`text-xl font-bold mt-0.5 ${cfg.text}`}>{resumen[campo]}</p>
-                  </div>
-                ))}
-              </div>
-
-              {/* Métricas generales */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 mb-5">
-                <div className="bg-bg border border-border rounded-xl p-3.5 flex items-center justify-between">
-                  <div>
-                    <p className="text-[11px] text-textMuted">Estudiantes</p>
-                    <p className="text-2xl font-bold">{resumen.cantidadEstudiantes}</p>
-                  </div>
-                </div>
-                <div className="bg-bg border border-border rounded-xl p-3.5 flex items-center justify-between">
-                  <div>
-                    <p className="text-[11px] text-textMuted">Presentismo</p>
-                    <p className="text-2xl font-bold">{resumen.porcentajePresentismo === null ? '—' : `${resumen.porcentajePresentismo}%`}</p>
-                  </div>
-                  <AnilloPresentismo pct={resumen.porcentajePresentismo} />
-                </div>
-                <div className="bg-bg border border-border rounded-xl p-3.5 flex items-center justify-between">
-                  <div>
-                    <p className="text-[11px] text-textMuted">Bajas</p>
-                    <p className={`text-2xl font-bold ${resumen.porcentajeBajas > 0 ? 'text-dangerText' : ''}`}>{resumen.porcentajeBajas}%</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Gráficos */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                <div className="bg-bg border border-border rounded-xl p-4">
-                  <p className="text-xs font-semibold text-textSec mb-3">Distribución de asistencia</p>
-                  <DistribucionEstados resumen={resumen} />
-                </div>
-                <div className="bg-bg border border-border rounded-xl p-4">
-                  <p className="text-xs font-semibold text-textSec mb-3">Evolución del presentismo</p>
-                  <LineaEvolucion puntos={puntosEvolucion} />
-                </div>
-              </div>
-            </>
-          ))}
-        </div>
-      )}
 
       {gestion && (
         <div className="bg-surface2 border border-border rounded-2xl p-4 mb-6 flex flex-wrap gap-4 items-end">
@@ -423,8 +369,8 @@ export default function EdicionDetallePage() {
             <table className="border-collapse text-xs w-full">
               <thead>
                 <tr className="bg-surface2">
-                  <th className="sticky left-0 bg-surface2 text-left px-3 py-2.5 border-b border-border min-w-[220px] font-semibold">Estudiante</th>
-                  <th className="text-left px-2 py-2.5 border-b border-border min-w-[80px] font-semibold">Estado</th>
+                  <th className="sticky left-0 z-10 bg-surface2 text-left px-3 py-2.5 border-b border-border min-w-[220px] font-semibold">Estudiante</th>
+                  <th className="sticky left-[220px] z-10 bg-surface2 text-left px-2 py-2.5 border-b border-r border-border min-w-[80px] font-semibold">Estado</th>
                   <th className="text-left px-2 py-2.5 border-b border-border min-w-[80px] font-semibold">Alerta</th>
                   <th className="text-left px-2 py-2.5 border-b border-border min-w-[70px] font-semibold">% Asist.</th>
                   {clases.map((c) => {
@@ -453,22 +399,27 @@ export default function EdicionDetallePage() {
                   const barraLateral = alerta === 'Riesgo' ? 'border-l-dangerText' : alerta === 'Atencion' ? 'border-l-warningText' : 'border-l-successText';
                   return (
                     <tr key={est.id} className={`odd:bg-bg even:bg-surface2/40 hover:bg-accentTeal/5 transition-colors border-l-2 ${barraLateral}`}>
-                      <td className="sticky left-0 bg-inherit px-3 py-2 border-b border-border font-medium">
-                        <button onClick={() => setEstudianteAbierto(estudianteAbierto === est.id ? null : est.id)} className="text-left hover:underline">
-                          {est.nombre}
-                        </button>
-                        {estudianteAbierto === est.id && (
-                          <PanelEstudiante
-                            estudiante={est}
-                            gestion={gestion}
-                            puedeNotas={puedeNotas}
-                            edicionId={id}
-                            onActualizar={(cambios) => actualizarEstudiante(est.id, cambios)}
-                            onCerrar={() => setEstudianteAbierto(null)}
-                          />
-                        )}
+                      <td className="sticky left-0 z-10 bg-inherit px-3 py-2 border-b border-border font-medium max-w-[220px]">
+                        {/* relative + ancho fijo: así el nombre largo (o el panel de abajo) nunca
+                            "empuja" el ancho real de esta columna — si lo hiciera, la columna
+                            Estado (fija en left-[220px]) quedaría mal alineada o tapada. */}
+                        <div className="relative">
+                          <button onClick={() => setEstudianteAbierto(estudianteAbierto === est.id ? null : est.id)} className="text-left hover:underline truncate block max-w-[190px]" title={est.nombre}>
+                            {est.nombre}
+                          </button>
+                          {estudianteAbierto === est.id && (
+                            <PanelEstudiante
+                              estudiante={est}
+                              gestion={gestion}
+                              puedeNotas={puedeNotas}
+                              edicionId={id}
+                              onActualizar={(cambios) => actualizarEstudiante(est.id, cambios)}
+                              onCerrar={() => setEstudianteAbierto(null)}
+                            />
+                          )}
+                        </div>
                       </td>
-                      <td className="px-2 py-2 border-b border-border">
+                      <td className="sticky left-[220px] z-10 bg-inherit px-2 py-2 border-b border-r border-border">
                         <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-semibold whitespace-nowrap ${colorEstado.bg} ${colorEstado.text}`}>
                           {est.estado}
                         </span>
@@ -524,6 +475,73 @@ export default function EdicionDetallePage() {
           )}
         </div>
       )}
+
+      {/* ---------- Seguimiento de Asistencia ---------- */}
+      {estudiantes.length > 0 && (
+        <div className="bg-surface2 border border-border rounded-2xl p-4 sm:p-5 mb-6">
+          <button type="button" onClick={() => setDashboardAbierto((v) => !v)} className="w-full text-left flex items-center justify-between gap-2 group">
+            <div>
+              <h2 className="text-base font-semibold mb-0.5 group-hover:text-accentTeal transition-colors">Seguimiento de Asistencia</h2>
+              <p className="text-textMuted text-xs">Visualizá rápidamente la asistencia, ausencias y evolución de los estudiantes.</p>
+            </div>
+            <span className="text-textMuted text-xs shrink-0">{dashboardAbierto ? '▲ Colapsar' : '▼ Ver'}</span>
+          </button>
+
+          {dashboardAbierto && (!hayAsistenciaCargada ? (
+            <div className="text-center py-8 bg-bg border border-dashed border-border rounded-xl">
+              <p className="text-sm font-medium text-textSec mb-1">Todavía no hay registros de asistencia</p>
+              <p className="text-xs text-textMuted">Cuando se carguen asistencias, vas a poder ver las métricas y evolución acá.</p>
+            </div>
+          ) : (
+            <>
+              {/* Indicadores por estado */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 mb-4">
+                {Object.entries(ICONO_INDICADOR).map(([campo, cfg]) => (
+                  <div key={campo} className={`rounded-xl border border-border p-3 ${cfg.bg}`}>
+                    <p className="text-[11px] text-textSec font-medium flex items-center gap-1">{cfg.icono} {cfg.label}</p>
+                    <p className={`text-xl font-bold mt-0.5 ${cfg.text}`}>{resumen[campo]}</p>
+                  </div>
+                ))}
+              </div>
+
+              {/* Métricas generales */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 mb-5">
+                <div className="bg-bg border border-border rounded-xl p-3.5 flex items-center justify-between">
+                  <div>
+                    <p className="text-[11px] text-textMuted">Estudiantes</p>
+                    <p className="text-2xl font-bold">{resumen.cantidadEstudiantes}</p>
+                  </div>
+                </div>
+                <div className="bg-bg border border-border rounded-xl p-3.5 flex items-center justify-between">
+                  <div>
+                    <p className="text-[11px] text-textMuted">Presentismo</p>
+                    <p className="text-2xl font-bold">{resumen.porcentajePresentismo === null ? '—' : `${resumen.porcentajePresentismo}%`}</p>
+                  </div>
+                  <AnilloPresentismo pct={resumen.porcentajePresentismo} />
+                </div>
+                <div className="bg-bg border border-border rounded-xl p-3.5 flex items-center justify-between">
+                  <div>
+                    <p className="text-[11px] text-textMuted">Bajas</p>
+                    <p className={`text-2xl font-bold ${resumen.porcentajeBajas > 0 ? 'text-dangerText' : ''}`}>{resumen.porcentajeBajas}%</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Gráficos */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <div className="bg-bg border border-border rounded-xl p-4">
+                  <p className="text-xs font-semibold text-textSec mb-3">Distribución de asistencia</p>
+                  <DistribucionEstados resumen={resumen} />
+                </div>
+                <div className="bg-bg border border-border rounded-xl p-4">
+                  <p className="text-xs font-semibold text-textSec mb-3">Evolución del presentismo</p>
+                  <LineaEvolucion puntos={puntosEvolucion} />
+                </div>
+              </div>
+            </>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -533,7 +551,7 @@ function PanelEstudiante({ estudiante, gestion, puedeNotas, edicionId, onActuali
   const [obs, setObs] = useState(estudiante.observaciones || '');
 
   return (
-    <div className="mt-2 mb-1 p-3 bg-bg border border-border rounded-lg w-[320px] font-normal">
+    <div className="absolute z-20 top-full left-0 mt-2 mb-1 p-3 bg-bg border border-border rounded-lg shadow-lg w-[320px] font-normal">
       {gestion && (
         <div className="mb-2">
           <label className="text-[10.5px] text-textSec block mb-1">Estado del estudiante</label>
