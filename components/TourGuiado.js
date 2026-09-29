@@ -1,9 +1,18 @@
 'use client';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
+import { useSession } from '../lib/useSession';
+import {
+  tienePermisoGestionAcademica, tienePermisoGestionRosterDocentes, tienePermisoVerSeguimiento,
+  tienePermisoVerHistorial, tienePermisoAccesos, tienePermisoVerReportes, puedeVerComoOtro
+} from '../lib/permisos';
 import { TOUR_PASOS, TAREAS_AYUDA } from '../lib/tourSteps';
 
 export default function TourGuiado() {
+  // Ojo: `usuario` acá ya es el usuario EFECTIVO (ver lib/useSession.js) — mientras alguien
+  // está en modo "Ver como", es la persona que se está mirando, no quien la está mirando.
+  // Por eso el recorrido/tareas se filtran solos según a quién se está viendo.
+  const { usuario } = useSession();
   const pathname = usePathname();
   const router = useRouter();
   const [menuAbierto, setMenuAbierto] = useState(false);
@@ -13,9 +22,22 @@ export default function TourGuiado() {
   const [rect, setRect] = useState(null);
   const [buscando, setBuscando] = useState(false);
 
-  const idx = pasoId ? TOUR_PASOS.findIndex((p) => p.id === pasoId) : -1;
-  const pasoActual = idx >= 0 ? TOUR_PASOS[idx] : null;
-  const total = TOUR_PASOS.length;
+  const CHEQUEOS = useMemo(() => ({
+    gestion: () => tienePermisoGestionAcademica(usuario),
+    puedeRoster: () => tienePermisoGestionRosterDocentes(usuario),
+    seguimiento: () => tienePermisoVerSeguimiento(usuario),
+    historial: () => tienePermisoVerHistorial(usuario),
+    accesos: () => tienePermisoAccesos(usuario),
+    reportes: () => tienePermisoVerReportes(usuario),
+    verComo: () => puedeVerComoOtro(usuario)
+  }), [usuario]);
+  const permitido = useCallback((p) => !p.requiere || (CHEQUEOS[p.requiere]?.() ?? true), [CHEQUEOS]);
+  const pasos = useMemo(() => TOUR_PASOS.filter(permitido), [permitido]);
+  const tareas = useMemo(() => TAREAS_AYUDA.filter(permitido), [permitido]);
+
+  const idx = pasoId ? pasos.findIndex((p) => p.id === pasoId) : -1;
+  const pasoActual = idx >= 0 ? pasos[idx] : null;
+  const total = pasos.length;
 
   const ubicarElemento = useCallback(() => {
     if (!pasoActual || !pasoActual.selector) { setRect(null); return; }
@@ -64,7 +86,7 @@ export default function TourGuiado() {
     setMenuAbierto(false);
     setModoTarea(false);
     setActivo(true);
-    setPasoId(TOUR_PASOS[0].id);
+    setPasoId(pasos[0].id);
   }
   function iniciarTarea(tarea) {
     setMenuAbierto(false);
@@ -74,12 +96,12 @@ export default function TourGuiado() {
   }
   function siguiente() {
     if (modoTarea) { cerrar(); return; }
-    const next = TOUR_PASOS[idx + 1];
+    const next = pasos[idx + 1];
     if (!next) { cerrar(); return; }
     setPasoId(next.id);
   }
   function anterior() {
-    const prev = TOUR_PASOS[idx - 1];
+    const prev = pasos[idx - 1];
     if (prev) setPasoId(prev.id);
   }
   function cerrar() {
@@ -92,7 +114,7 @@ export default function TourGuiado() {
     <>
       <button
         onClick={() => setMenuAbierto((v) => !v)}
-        className="fixed bottom-5 right-5 z-[90] bg-gradient-to-r from-accentPurple to-accentMagenta text-white text-sm font-semibold px-4 py-2.5 rounded-full shadow-lg flex items-center gap-1.5 hover:opacity-90 transition-opacity no-print"
+        className="fixed bottom-16 right-5 z-[90] bg-gradient-to-r from-accentPurple to-accentMagenta text-white text-sm font-semibold px-4 py-2.5 rounded-full shadow-lg flex items-center gap-1.5 hover:opacity-90 transition-opacity no-print"
       >
         ❓ Necesito ayuda
       </button>
@@ -110,7 +132,7 @@ export default function TourGuiado() {
             </button>
             <p className="text-[11px] text-textMuted mb-1.5 font-semibold">O elegí una tarea puntual:</p>
             <div className="flex flex-col gap-1">
-              {TAREAS_AYUDA.map((t) => (
+              {tareas.map((t) => (
                 <button
                   key={t.id}
                   className="text-left text-xs text-textSec hover:text-text bg-bg border border-border rounded-lg px-2.5 py-1.5"
