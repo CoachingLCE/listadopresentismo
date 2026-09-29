@@ -1,31 +1,37 @@
 'use client';
-import { useState } from 'react';
-import { usePathname } from 'next/navigation';
-import { useSession } from '../lib/useSession';
-import { tienePermisoVerReportes } from '../lib/permisos';
+import { useEffect, useState } from 'react';
 import { APP_VERSION, APP_UPDATED_AT } from '../lib/version';
 import { CHANGELOG } from '../lib/changelog';
 
-// Visible solo para SuperAdmin, Coordinación y Académico (el mismo grupo "de gestión" que
-// ya usa tienePermisoVerReportes) — el resto de los roles no ve el badge de novedades.
-export default function VersionBadge() {
-  const pathname = usePathname();
-  const { usuario } = useSession();
-  const [abierto, setAbierto] = useState(false);
-  const fecha = new Date(APP_UPDATED_AT + 'T00:00:00').toLocaleDateString('es-AR', {
-    day: '2-digit', month: '2-digit', year: 'numeric'
-  });
+const CLAVE_ULTIMA_VISTA = 'ilce-presentismo-ultima-version-vista';
 
-  if (pathname === '/login' || pathname === '/setup-password') return null;
-  if (!usuario || !tienePermisoVerReportes(usuario)) return null;
+export default function VersionBadge() {
+  const [abierto, setAbierto] = useState(false);
+  const [hayNovedades, setHayNovedades] = useState(false);
+  const [verAnteriores, setVerAnteriores] = useState(false);
+  const fecha = new Date(APP_UPDATED_AT + 'T00:00:00').toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+
+  // Parpadea mientras la ultima version vista sea distinta de la actual; al hacer clic se marca como vista.
+  useEffect(() => {
+    try { if (localStorage.getItem(CLAVE_ULTIMA_VISTA) !== APP_VERSION) setHayNovedades(true); } catch (e) { /* */ }
+  }, []);
+
+  function abrir() {
+    setAbierto(true);
+    setHayNovedades(false);
+    try { localStorage.setItem(CLAVE_ULTIMA_VISTA, APP_VERSION); } catch (e) { /* */ }
+  }
+
+  const hoy = new Date();
+  const mesActual = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}`;
+  const delMes = CHANGELOG.filter((e) => (e.fecha || '').slice(0, 7) === mesActual);
+  const paraMostrar = verAnteriores ? CHANGELOG : (delMes.length ? delMes : CHANGELOG.slice(0, 1));
+  const hayMasParaVer = !verAnteriores && paraMostrar.length < CHANGELOG.length;
 
   return (
     <>
-      <button
-        onClick={() => setAbierto(true)}
-        className="fixed bottom-20 right-5 text-[11px] text-textMuted bg-surface2/90 border border-border rounded-full px-3 py-1 z-40 hover:text-text hover:border-accentTeal transition-colors"
-        title="Ver novedades"
-      >
+      <button onClick={abrir} title="Ver novedades"
+        className={'fixed bottom-3 right-4 text-[11px] text-textMuted bg-surface2 border border-border rounded-full px-3 py-1 z-40 no-print hover:text-text hover:border-accentTeal transition-colors' + (hayNovedades ? ' version-badge-novedad' : '')}>
         v{APP_VERSION} · Actualizado {fecha}
       </button>
       {abierto && (
@@ -36,22 +42,22 @@ export default function VersionBadge() {
               <button onClick={() => setAbierto(false)} className="text-textMuted hover:text-text">✕</button>
             </div>
             <div className="space-y-5">
-              {CHANGELOG.map((entrada) => (
-                <div key={entrada.version}>
+              {paraMostrar.map((e) => (
+                <div key={e.version}>
                   <p className="text-sm font-semibold text-accentTeal mb-1.5">
-                    v{entrada.version} · {new Date(entrada.fecha + 'T00:00:00').toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+                    v{e.version} · {new Date(e.fecha + 'T00:00:00').toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' })}
                   </p>
                   <ul className="space-y-1">
-                    {entrada.cambios.map((c, i) => (
-                      <li key={i} className="text-textSec text-xs flex gap-2">
-                        <span className="text-accentPurple">•</span>
-                        <span>{c}</span>
-                      </li>
+                    {e.cambios.map((c, i) => (
+                      <li key={i} className="text-textSec text-xs flex gap-2"><span className="text-accentPurple">•</span><span>{c}</span></li>
                     ))}
                   </ul>
                 </div>
               ))}
             </div>
+            {hayMasParaVer && (
+              <button onClick={() => setVerAnteriores(true)} className="mt-4 text-xs text-accentTeal hover:underline">Ver novedades anteriores →</button>
+            )}
           </div>
         </div>
       )}
