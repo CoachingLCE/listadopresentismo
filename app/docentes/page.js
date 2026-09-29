@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from '../../lib/useSession';
-import { tienePermisoGestionAcademica, tienePermisoGestionRosterDocentes, esSuperAdmin } from '../../lib/permisos';
+import { tienePermisoGestionAcademica, tienePermisoGestionRosterDocentes } from '../../lib/permisos';
 import { CURSOS, colorCurso } from '../../lib/cursosLogic';
 
 const ROLES_ROSTER = ['Docente', 'Staff'];
@@ -82,6 +82,7 @@ export default function DocentesPage() {
   const [mensaje, setMensaje] = useState('');
   const [busqueda, setBusqueda] = useState('');
   const [filtroRol, setFiltroRol] = useState('todos');
+  const [filtroCursos, setFiltroCursos] = useState([]);
 
   const [drawerAbierto, setDrawerAbierto] = useState(false);
   const [nombre, setNombre] = useState('');
@@ -92,7 +93,6 @@ export default function DocentesPage() {
 
   const gestion = usuario ? tienePermisoGestionAcademica(usuario) : false;
   const puedeRoster = usuario ? tienePermisoGestionRosterDocentes(usuario) : false;
-  const superAdmin = usuario ? esSuperAdmin(usuario) : false;
 
   useEffect(() => {
     if (!cargando && (!usuario || !gestion)) router.push('/ediciones');
@@ -103,8 +103,8 @@ export default function DocentesPage() {
   }, [usuario]);
 
   useEffect(() => {
-    if (usuario && superAdmin) cargarAccesos();
-  }, [usuario, superAdmin]);
+    if (usuario && puedeRoster) cargarAccesos();
+  }, [usuario, puedeRoster]);
 
   async function cargarAccesos() {
     try {
@@ -212,8 +212,9 @@ export default function DocentesPage() {
     return docentes
       .filter((d) => !q || d.nombre.toLowerCase().includes(q) || d.email.toLowerCase().includes(q))
       .filter((d) => filtroRol === 'todos' || (d.roles || ['Docente']).includes(filtroRol))
+      .filter((d) => filtroCursos.length === 0 || (d.cursos || []).some((c) => filtroCursos.includes(c)))
       .sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
-  }, [docentes, busqueda, filtroRol]);
+  }, [docentes, busqueda, filtroRol, filtroCursos]);
 
   const contadorRol = useMemo(() => ({
     todos: docentes.length,
@@ -221,7 +222,17 @@ export default function DocentesPage() {
     Staff: docentes.filter((d) => (d.roles || ['Docente']).includes('Staff')).length
   }), [docentes]);
 
-  const hayFiltrosActivos = busqueda.trim() || filtroRol !== 'todos';
+  function toggleFiltroCurso(codigo) {
+    setFiltroCursos((prev) => prev.includes(codigo) ? prev.filter((c) => c !== codigo) : [...prev, codigo]);
+  }
+
+  function limpiarFiltros() {
+    setBusqueda('');
+    setFiltroRol('todos');
+    setFiltroCursos([]);
+  }
+
+  const hayFiltrosActivos = busqueda.trim() || filtroRol !== 'todos' || filtroCursos.length > 0;
 
   if (cargando || !usuario || !gestion) return null;
 
@@ -272,10 +283,33 @@ export default function DocentesPage() {
           ))}
         </div>
         {hayFiltrosActivos && (
-          <button onClick={() => { setBusqueda(''); setFiltroRol('todos'); }} className="text-xs text-textMuted hover:text-text underline">
+          <button onClick={limpiarFiltros} className="text-xs text-textMuted hover:text-text underline">
             Limpiar
           </button>
         )}
+      </div>
+
+      <div className="flex items-center gap-1.5 flex-wrap mb-4 -mt-2.5">
+        <span className="text-[11px] text-textMuted font-medium shrink-0">Curso:</span>
+        {CURSOS.map((c) => {
+          const activo = filtroCursos.includes(c.codigo);
+          const color = colorCurso(c.codigo);
+          return (
+            <button
+              key={c.codigo}
+              type="button"
+              onClick={() => toggleFiltroCurso(c.codigo)}
+              className={`inline-flex items-center gap-1.5 text-[11px] px-2.5 py-1 rounded-full font-medium whitespace-nowrap border transition-all ${
+                activo
+                  ? `${color.badge} border-transparent ring-1 ring-inset ring-current`
+                  : 'bg-surface2 border-border text-textMuted hover:border-accentTeal hover:text-textSec'
+              }`}
+            >
+              <span className={`w-1.5 h-1.5 rounded-full ${color.dot}`} />
+              {c.nombre}
+            </button>
+          );
+        })}
       </div>
 
       {cargandoLista ? (
@@ -292,7 +326,7 @@ export default function DocentesPage() {
               : 'No se encontró nadie con ese nombre, email o filtro.'}
           </p>
           {docentes.length > 0 && hayFiltrosActivos && (
-            <button onClick={() => { setBusqueda(''); setFiltroRol('todos'); }} className="text-xs text-accentTeal hover:underline mt-2">
+            <button onClick={limpiarFiltros} className="text-xs text-accentTeal hover:underline mt-2">
               Limpiar búsqueda y filtros
             </button>
           )}
@@ -302,7 +336,6 @@ export default function DocentesPage() {
           {docentesFiltrados.map((d) => (
             <FilaDocente
               key={d.email} d={d} puedeRoster={puedeRoster} onActualizar={actualizar}
-              superAdmin={superAdmin}
               tieneAcceso={usuariosConAcceso.some((u) => u.email.toLowerCase() === d.email.toLowerCase())}
               onCrearAcceso={(password) => crearOActualizarAcceso(d, password)}
             />
@@ -367,7 +400,7 @@ export default function DocentesPage() {
   );
 }
 
-function FilaDocente({ d, puedeRoster, onActualizar, superAdmin, tieneAcceso, onCrearAcceso }) {
+function FilaDocente({ d, puedeRoster, onActualizar, tieneAcceso, onCrearAcceso }) {
   const [abierto, setAbierto] = useState(false);
   const [cursos, setCursos] = useState(d.cursos);
   const [roles, setRoles] = useState(d.roles || ['Docente']);
@@ -425,6 +458,14 @@ function FilaDocente({ d, puedeRoster, onActualizar, superAdmin, tieneAcceso, on
               {ROL_ICONO[r] || ''} {r}
             </span>
           ))}
+          {puedeRoster && (
+            <span
+              title={tieneAcceso ? 'Tiene acceso al sistema' : 'Todavía no tiene acceso al sistema'}
+              className={`text-[10px] px-1.5 py-0.5 rounded-full font-semibold whitespace-nowrap ${tieneAcceso ? 'bg-successBg text-successText' : 'bg-surface text-textMuted'}`}
+            >
+              {tieneAcceso ? '● Acceso' : '○ Sin acceso'}
+            </span>
+          )}
         </div>
 
         <p className="text-textMuted text-xs truncate hidden sm:block sm:w-48 shrink-0">{d.email}</p>
@@ -474,8 +515,8 @@ function FilaDocente({ d, puedeRoster, onActualizar, superAdmin, tieneAcceso, on
               </div>
             </div>
 
-            {/* C: Acceso al sistema — solo SuperAdmin, siempre separado como sección propia */}
-            {superAdmin && (
+            {/* C: Acceso al sistema — Coordinación y SuperAdmin, siempre separado como sección propia */}
+            {puedeRoster && (
               <div className="md:col-span-2">
                 <p className="text-[10.5px] text-textMuted font-semibold uppercase tracking-wide mb-2">Acceso al sistema</p>
                 <div className="bg-bg border border-border rounded-lg px-3 py-2.5">
