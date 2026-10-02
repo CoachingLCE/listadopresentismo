@@ -61,6 +61,7 @@ export default function Nav() {
     gestion && link('/docentes', 'Equipo docente'),
     gestion && link('/estudiantes', 'Estudiantes'),
     link('/carga', 'Cargar asistencia'),
+    link('/credenciales-zoom', 'Credenciales Zoom'),
     seguimiento && link('/seguimiento', 'Seguimiento'),
     reportes && link('/reportes', 'Reportes'),
     reportes && link('/emails', 'Emails'),
