@@ -3,6 +3,7 @@ import { Suspense, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useSession } from '../../lib/useSession';
 import Logo from '../../components/Logo';
+import ThemeSelector from '../../components/ThemeSelector';
 
 export default function LoginPage() {
   return (
@@ -50,17 +51,20 @@ function LoginContenido() {
 
   return (
     <div className="flex justify-center pt-24 px-6 min-h-screen">
+      <div className="fixed top-4 right-4"><ThemeSelector /></div>
       <div className="w-80 bg-surface2 border border-border rounded-2xl p-7 h-fit">
         <div className="flex justify-center mb-3"><Logo height={44} /></div>
-        <p className="text-center text-textSec text-sm mb-5">Presentismo ILCE — ingresá con tu usuario y contraseña</p>
+        <h1 className="text-center text-lg font-bold text-text leading-tight">Presentismo</h1>
+        <p className="text-center text-textSec text-[13px] mb-5 mt-0.5">Ingresá con tu usuario y contraseña</p>
         {sesionVencida && (
-          <div className="bg-infoBg text-infoText rounded-lg px-3 py-2.5 text-xs mb-4 text-center">
+          <div className="bg-infoBg text-infoText rounded-lg px-3 py-2.5 text-[13px] mb-4 text-center">
             Tu sesión venció (por seguridad, duran 10 horas) — volvé a entrar.
           </div>
         )}
         <form onSubmit={handleSubmit}>
-          <label className="text-xs text-textSec block mb-1">Email</label>
+          <label htmlFor="login-email" className="text-[13px] font-semibold text-textSec block mb-1">Email</label>
           <input
+            id="login-email"
             type="email"
             required
             value={email}
@@ -68,9 +72,10 @@ function LoginContenido() {
             placeholder="nombre@institutoilce.com"
             className="w-full bg-bg border border-border rounded-lg px-3 py-2 text-sm mb-3"
           />
-          <label className="text-xs text-textSec block mb-1">Contraseña</label>
+          <label htmlFor="login-password" className="text-[13px] font-semibold text-textSec block mb-1">Contraseña</label>
           <div className="relative mb-3">
             <input
+              id="login-password"
               type={verPassword ? 'text' : 'password'}
               required
               value={password}
@@ -81,16 +86,22 @@ function LoginContenido() {
             <button
               type="button"
               onClick={() => setVerPassword((v) => !v)}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-textMuted text-xs"
+              className="absolute right-1 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center rounded-md text-textMuted hover:text-text"
+              aria-label={verPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+              title={verPassword ? 'Ocultar' : 'Mostrar'}
             >
-              {verPassword ? 'Ocultar' : 'Ver'}
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                {verPassword
+                  ? <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24M10.73 5.08A10.4 10.4 0 0 1 12 5c7 0 10 7 10 7a13.2 13.2 0 0 1-1.67 2.68M6.61 6.61A13.5 13.5 0 0 0 2 12s3 7 10 7a9.7 9.7 0 0 0 5.39-1.61M2 2l20 20" />
+                  : <><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z" /><circle cx="12" cy="12" r="3" /></>}
+              </svg>
             </button>
           </div>
-          <label className="flex items-center gap-2 text-xs text-textSec mb-4">
-            <input type="checkbox" checked={mantenerSesion} onChange={(e) => setMantenerSesion(e.target.checked)} />
+          <label className="flex items-center gap-2 text-[13px] text-textSec mb-4">
+            <input type="checkbox" className="accent-accentMagenta w-4 h-4" checked={mantenerSesion} onChange={(e) => setMantenerSesion(e.target.checked)} />
             Mantener sesión abierta
           </label>
-          {error && <p className="text-dangerText text-xs mb-3">{error}</p>}
+          {error && <p role="alert" className="text-dangerText text-[13px] mb-3">{error}</p>}
           <button
             type="submit"
             disabled={cargando}
@@ -99,7 +110,7 @@ function LoginContenido() {
             {cargando ? 'Ingresando…' : 'Ingresar'}
           </button>
         </form>
-        <p className="text-center text-textMuted text-[11px] mt-4">
+        <p className="text-center text-textMuted text-[13px] mt-4">
           ¿Todavía no tenés contraseña? <a href="/setup-password" className="underline">Asignar la primera acá</a>
         </p>
       </div>

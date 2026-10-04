@@ -26,7 +26,7 @@ function Seccion({ titulo, descripcion, children }) {
   return (
     <div className="border-b border-border pb-5 mb-5 last:border-0 last:pb-0 last:mb-0">
       <h2 className="text-sm font-semibold mb-0.5">{titulo}</h2>
-      {descripcion && <p className="text-[11.5px] text-textMuted mb-3">{descripcion}</p>}
+      {descripcion && <p className="text-[12px] text-textMuted mb-3">{descripcion}</p>}
       {!descripcion && <div className="mb-3" />}
       {children}
     </div>
@@ -110,7 +110,7 @@ function Campo({ label, requerido, error, children }) {
         {label} {requerido && <span className="text-accentMagenta">*</span>}
       </label>
       {children}
-      {error && <p className="text-dangerText text-[11px] mt-1">{error}</p>}
+      {error && <p className="text-dangerText text-[12px] mt-1">{error}</p>}
     </div>
   );
 }
@@ -118,7 +118,7 @@ function Campo({ label, requerido, error, children }) {
 function FilaPreview({ label, children }) {
   return (
     <div className="flex items-center justify-between gap-3 py-1.5 border-b border-border/60 last:border-0">
-      <span className="text-[11.5px] text-textMuted shrink-0">{label}</span>
+      <span className="text-[12px] text-textMuted shrink-0">{label}</span>
       <span className="text-[12.5px] font-medium text-right truncate">{children}</span>
     </div>
   );
@@ -133,7 +133,7 @@ function VistaPrevia({ curso, numero, docenteNombre, staffNombre, fechaInicio, f
 
   return (
     <div className="bg-surface2 border border-border rounded-2xl p-5 shadow-sm shadow-black/10">
-      <p className="text-[11px] font-semibold text-textMuted uppercase tracking-wide mb-3">Vista previa</p>
+      <p className="text-[12px] font-semibold text-textMuted uppercase tracking-wide mb-3">Vista previa</p>
 
       <div className="flex items-start justify-between gap-2 mb-1">
         <div className="flex items-center gap-2 min-w-0">
@@ -141,7 +141,7 @@ function VistaPrevia({ curso, numero, docenteNombre, staffNombre, fechaInicio, f
           <p className="font-semibold text-sm truncate">{nombreCurso(curso)}</p>
         </div>
         {estado && (
-          <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-semibold shrink-0 ${BADGE_ESTADO_EDICION[estado] || 'bg-surface text-textMuted'}`}>
+          <span className={`text-[12px] px-1.5 py-0.5 rounded-full font-semibold shrink-0 ${BADGE_ESTADO_EDICION[estado] || 'bg-surface text-textMuted'}`}>
             {LABEL_ESTADO_EDICION[estado] || estado}
           </span>
         )}
@@ -157,20 +157,20 @@ function VistaPrevia({ curso, numero, docenteNombre, staffNombre, fechaInicio, f
 
       {calendarioPreview && (
         <div className="mt-3 pt-3 border-t border-border">
-          <p className="text-[11px] text-textMuted">
+          <p className="text-[12px] text-textMuted">
             Se van a generar <strong className="text-text">{calendarioPreview.length} clases</strong>
             {cursoInfo && cursoInfo.totalClases === 48 && !totalOverride && ' (3 cuatrimestres de 16, con receso de dos semanas entre cada uno)'}.
           </p>
           <button
             type="button" onClick={() => setVerCalendario((v) => !v)}
-            className="text-accentTeal text-[11px] font-medium mt-1.5 hover:underline"
+            className="text-accentTeal text-[12px] font-medium mt-1.5 hover:underline"
           >
             {verCalendario ? '▲ Ocultar fechas' : '▼ Ver todas las fechas'}
           </button>
           {verCalendario && (
             <div className="flex flex-wrap gap-1 max-h-32 overflow-y-auto mt-2">
               {calendarioPreview.map((c) => (
-                <span key={c.numero} className="text-[10.5px] bg-bg border border-border rounded px-1.5 py-0.5 text-textMuted">
+                <span key={c.numero} className="text-[12px] bg-bg border border-border rounded px-1.5 py-0.5 text-textMuted">
                   #{c.numero} {formatFechaDDMMAAAA(c.fecha)}
                 </span>
               ))}
@@ -315,7 +315,7 @@ export default function NuevaEdicionPage() {
                     {docentesDelCurso.map((d) => <option key={d.email} value={d.email}>{d.nombre}</option>)}
                   </select>
                   {docentesDelCurso.length === 0 && (
-                    <p className="text-textMuted text-[11px] mt-1">Nadie del roster tiene este curso marcado como propio todavía.</p>
+                    <p className="text-textMuted text-[12px] mt-1">Nadie del roster tiene este curso marcado como propio todavía.</p>
                   )}
                 </Campo>
               </div>
@@ -330,7 +330,7 @@ export default function NuevaEdicionPage() {
                   onChange={(e) => { setFechaInicio(e.target.value); setErroresCampo((p) => ({ ...p, fechaInicio: undefined })); }}
                   className={erroresCampo.fechaInicio ? inputErrCls : inputCls}
                 />
-                <p className="text-textMuted text-[11px] mt-1">El calendario se genera automáticamente a partir de esta fecha.</p>
+                <p className="text-textMuted text-[12px] mt-1">El calendario se genera automáticamente a partir de esta fecha.</p>
               </Campo>
               <Campo label="Fecha de finalización (estimada)">
                 <div className="w-full bg-bg border border-border rounded-lg px-3 py-2.5 text-sm text-textSec">
@@ -348,7 +348,7 @@ export default function NuevaEdicionPage() {
                   {staffDisponible.map((d) => <option key={d.email} value={d.email}>{d.nombre}</option>)}
                 </select>
                 {staffDisponible.length === 0 && (
-                  <p className="text-textMuted text-[11px] mt-1">
+                  <p className="text-textMuted text-[12px] mt-1">
                     Todavía nadie en el roster tiene marcado el rol Staff — se puede sumar desde{' '}
                     <Link href="/docentes" className="underline text-accentTeal">Equipo docente</Link>.
                   </p>

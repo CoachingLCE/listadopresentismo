@@ -43,7 +43,7 @@ export function DistribucionEstados({ resumen }) {
           return (
             <div
               key={s.key}
-              className="flex items-center justify-center text-[10.5px] font-semibold text-white transition-all"
+              className="flex items-center justify-center text-[12px] font-semibold text-white transition-all"
               style={{ width: `${pct}%`, backgroundColor: s.color, marginRight: i < segmentos.length - 1 ? 2 : 0 }}
               title={`${s.label}: ${s.valor} (${Math.round(pct)}%)`}
             >
@@ -79,14 +79,14 @@ export function BarraPresentesAusentes({ presentes, ausentes }) {
     <div>
       <div className="flex h-7 rounded-lg overflow-hidden bg-bg" role="img" aria-label={`${presentes} presentes, ${ausentes} ausentes`}>
         <div
-          className="flex items-center justify-center text-[11px] font-semibold text-white transition-all"
+          className="flex items-center justify-center text-[12px] font-semibold text-white transition-all"
           style={{ width: `${pctPresentes}%`, backgroundColor: VERDE, marginRight: ausentes > 0 ? 2 : 0 }}
           title={`Presentes: ${presentes} (${Math.round(pctPresentes)}%)`}
         >
           {anchoPresentesLabel ? `${Math.round(pctPresentes)}%` : ''}
         </div>
         <div
-          className="flex items-center justify-center text-[11px] font-semibold text-white transition-all"
+          className="flex items-center justify-center text-[12px] font-semibold text-white transition-all"
           style={{ width: `${pctAusentes}%`, backgroundColor: ROJO }}
           title={`Ausentes: ${ausentes} (${Math.round(pctAusentes)}%)`}
         >
@@ -139,7 +139,7 @@ export function BarrasPorEdicion({ filas }) {
                     style={{ width: `${pct}%`, backgroundColor: bajo ? ROJO : TEAL }}
                   />
                   {hover === key && (
-                    <div className="absolute -top-8 left-0 bg-surface border border-border rounded-lg px-2 py-1 text-[11px] whitespace-nowrap shadow-lg z-10">
+                    <div className="absolute -top-8 left-0 bg-surface border border-border rounded-lg px-2 py-1 text-[12px] whitespace-nowrap shadow-lg z-10">
                       {f.resumen.totalPresentes} presentes · {f.resumen.totalAusentes} ausentes · {f.resumen.totalAusentesJustificados} justif.
                     </div>
                   )}
@@ -150,7 +150,7 @@ export function BarrasPorEdicion({ filas }) {
           })}
         </div>
       </div>
-      <p className="text-[11px] text-textMuted">┊ línea punteada: umbral de alerta ({UMBRAL_PRESENTISMO_BAJO}%) — pasá el mouse por una barra para ver el detalle.</p>
+      <p className="text-[12px] text-textMuted">┊ línea punteada: umbral de alerta ({UMBRAL_PRESENTISMO_BAJO}%) — pasá el mouse por una barra para ver el detalle.</p>
     </div>
   );
 }
@@ -245,7 +245,7 @@ export function LineaEvolucion({ puntos }) {
 
       {activo && (
         <div
-          className="absolute bg-surface border border-border rounded-lg px-2.5 py-1.5 text-[11px] shadow-lg pointer-events-none"
+          className="absolute bg-surface border border-border rounded-lg px-2.5 py-1.5 text-[12px] shadow-lg pointer-events-none"
           style={{
             left: `${Math.min(Math.max((activo.x / W) * 100, 12), 88)}%`,
             top: 4,

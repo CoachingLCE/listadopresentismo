@@ -115,7 +115,7 @@ export default function Nav() {
         <span className="w-8 h-8 rounded-full bg-gradient-to-br from-accentPurple to-accentMagenta flex items-center justify-center text-white text-sm shrink-0">🧭</span>
         <div>
           <p className="text-[13px] font-semibold text-text">Acompañamos, observamos e intervenimos.</p>
-          <p className="text-[11.5px] text-textSec leading-snug mt-0.5">
+          <p className="text-[12px] text-textSec leading-snug mt-0.5">
             El seguimiento del presentismo nos permite conocer la participación de nuestros estudiantes, identificar
             tempranamente situaciones que requieren atención y tomar decisiones oportunas para acompañar sus
             trayectorias.

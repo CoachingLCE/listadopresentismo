@@ -178,7 +178,7 @@ function SeguimientoContenido() {
       <div className="flex items-center gap-2.5 flex-wrap mb-1">
         <h1 className="text-xl">{estudiante ? estudiante.nombre : 'Seguimiento'}</h1>
         {estudiante && (
-          <button type="button" onClick={cambiarEstudiante} className="text-[11px] text-accentTeal underline">
+          <button type="button" onClick={cambiarEstudiante} className="text-[12px] text-accentTeal underline">
             Cambiar estudiante
           </button>
         )}
@@ -264,18 +264,18 @@ function SeguimientoContenido() {
                 <div>
                   <p className="text-sm font-semibold">
                     <span
-                      className="inline-block text-[10px] px-1.5 py-0.5 rounded-full font-semibold mr-1.5 align-middle"
+                      className="inline-block text-[12px] px-1.5 py-0.5 rounded-full font-semibold mr-1.5 align-middle"
                       style={{ backgroundColor: (MOTIVO_COLOR[s.motivo] || {}).bg || 'rgb(var(--color-surface))', color: (MOTIVO_COLOR[s.motivo] || {}).text || 'rgb(var(--color-textMuted))' }}
                     >
                       {s.motivo}
                     </span>
                   </p>
-                  <p className="text-[11px] text-textMuted mt-1">
+                  <p className="text-[12px] text-textMuted mt-1">
                     {s.fecha} · Registrado por {s.responsable}
                     {s.edicionCurso && ` · ${s.edicionCurso} — Edición ${s.edicionNumero}`}
                   </p>
                 </div>
-                <select value={s.estado} onChange={(e) => actualizarEstado(s.id, e.target.value)} className={`text-[11px] px-2 py-1 rounded-full font-semibold border-0 ${badgeEstado[s.estado]}`}>
+                <select value={s.estado} onChange={(e) => actualizarEstado(s.id, e.target.value)} className={`text-[12px] px-2 py-1 rounded-full font-semibold border-0 ${badgeEstado[s.estado]}`}>
                   {ESTADOS_SEGUIMIENTO.map((e) => <option key={e} value={e}>{e}</option>)}
                 </select>
               </div>

@@ -16,6 +16,19 @@ export default function VersionBadge() {
     try { if (localStorage.getItem(CLAVE_ULTIMA_VISTA) !== APP_VERSION) setHayNovedades(true); } catch (e) { /* */ }
   }, []);
 
+  // "Novedades" tambien se abre desde el boton de Ayuda (en celular el badge flotante no se muestra).
+  useEffect(() => {
+    const abrirDesdeAyuda = () => abrir();
+    window.addEventListener('ilce:novedades', abrirDesdeAyuda);
+    return () => window.removeEventListener('ilce:novedades', abrirDesdeAyuda);
+  });
+  useEffect(() => {
+    if (!abierto) return undefined;
+    const cerrarConEsc = (e) => { if (e.key === 'Escape') setAbierto(false); };
+    document.addEventListener('keydown', cerrarConEsc);
+    return () => document.removeEventListener('keydown', cerrarConEsc);
+  }, [abierto]);
+
   function abrir() {
     setAbierto(true);
     setHayNovedades(false);
@@ -31,7 +44,7 @@ export default function VersionBadge() {
   return (
     <>
       <button onClick={abrir} title="Ver novedades"
-        className={'fixed bottom-3 right-4 text-[11px] text-textMuted bg-surface2 border border-border rounded-full px-3 py-1 z-40 no-print hover:text-text hover:border-accentTeal transition-colors' + (hayNovedades ? ' version-badge-novedad' : '')}>
+        className={'hidden md:block fixed bottom-3 right-4 text-[12px] text-textMuted bg-surface2 border border-border rounded-full px-3 py-1 z-40 no-print hover:text-text hover:border-accentTeal transition-colors' + (hayNovedades ? ' version-badge-novedad' : '')}>
         v{APP_VERSION} · Actualizado {fecha}
       </button>
       {abierto && (

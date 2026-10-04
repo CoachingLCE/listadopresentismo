@@ -126,7 +126,7 @@ export default function AccesosPage() {
               className={inputCls}
             />
             {nuevoPassword.length > 0 && nuevoPassword.length < 8 && (
-              <p className="text-dangerText text-[11px] mt-1">La contraseña tiene que tener al menos 8 caracteres (le faltan {8 - nuevoPassword.length}).</p>
+              <p className="text-dangerText text-[12px] mt-1">La contraseña tiene que tener al menos 8 caracteres (le faltan {8 - nuevoPassword.length}).</p>
             )}
           </div>
           <div className="col-span-2">
@@ -232,7 +232,7 @@ function FilaUsuario({ u, puedeEditar, onActualizar }) {
           <span className="font-semibold text-sm">{u.nombre}</span>
           <span className="text-textSec text-xs ml-2">{u.email}</span>
         </div>
-        <span className={`text-[11.5px] ${u.activo ? 'text-successText' : 'text-dangerText'}`}>
+        <span className={`text-[12px] ${u.activo ? 'text-successText' : 'text-dangerText'}`}>
           {u.activo ? '● Activo' : '● Desactivado'} {!u.tieneContrasena && '· sin contraseña asignada'}
         </span>
       </div>
@@ -252,7 +252,7 @@ function FilaUsuario({ u, puedeEditar, onActualizar }) {
               {guardandoRol ? 'Guardando…' : 'Guardar rol'}
             </button>
             {avisoRol && (
-              <p className={`text-[11px] ${avisoRol.ok ? 'text-successText' : 'text-dangerText'}`}>{avisoRol.texto}</p>
+              <p className={`text-[12px] ${avisoRol.ok ? 'text-successText' : 'text-dangerText'}`}>{avisoRol.texto}</p>
             )}
           </div>
           <button className={btnSecCls} onClick={() => onActualizar(u.email, { activo: !u.activo })}>
@@ -274,7 +274,7 @@ function FilaUsuario({ u, puedeEditar, onActualizar }) {
               </button>
             </div>
             {nuevaPassword.length > 0 && nuevaPassword.length < 8 && (
-              <p className="text-dangerText text-[11px]">La contraseña tiene que tener al menos 8 caracteres (le faltan {8 - nuevaPassword.length}).</p>
+              <p className="text-dangerText text-[12px]">La contraseña tiene que tener al menos 8 caracteres (le faltan {8 - nuevaPassword.length}).</p>
             )}
           </div>
           <button

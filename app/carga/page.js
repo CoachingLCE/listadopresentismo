@@ -99,7 +99,7 @@ export default function CargaPage() {
       <div className="flex items-center gap-2.5 flex-wrap mb-1">
         <h1 className="text-xl">Cargar asistencia</h1>
         {guardadoOk && (
-          <span className="text-[11px] text-successText bg-successBg rounded-full px-2 py-0.5 font-semibold">✓ Asistencia guardada</span>
+          <span className="text-[12px] text-successText bg-successBg rounded-full px-2 py-0.5 font-semibold">✓ Asistencia guardada</span>
         )}
       </div>
       <p className="text-textSec text-sm mb-5">Elegí la edición y la clase, y marcá a cada estudiante.</p>
@@ -137,9 +137,9 @@ export default function CargaPage() {
             >
               <div>
                 <p className="text-xs text-textSec font-medium">📊 Información de la edición</p>
-                <p className="text-[11px] text-textMuted">Consultá el seguimiento y los indicadores de esta edición.</p>
+                <p className="text-[12px] text-textMuted">Consultá el seguimiento y los indicadores de esta edición.</p>
               </div>
-              <span className="text-[11px] text-accentTeal font-medium whitespace-nowrap shrink-0">Ver información →</span>
+              <span className="text-[12px] text-accentTeal font-medium whitespace-nowrap shrink-0">Ver información →</span>
             </Link>
           )}
 
@@ -161,7 +161,7 @@ export default function CargaPage() {
                           <button
                             key={e} type="button" disabled={guardando[est.id]}
                             onClick={() => marcar(est.id, e)}
-                            className={`text-[11px] px-2 py-1 rounded-full border font-semibold ${estado === e ? COLOR_PRESENTISMO[e] + ' border-transparent' : 'border-border text-textMuted'}`}
+                            className={`text-[12px] px-2 py-1 rounded-full border font-semibold ${estado === e ? COLOR_PRESENTISMO[e] + ' border-transparent' : 'border-border text-textMuted'}`}
                           >
                             {e}
                           </button>

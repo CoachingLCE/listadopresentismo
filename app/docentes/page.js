@@ -60,7 +60,7 @@ function ChipCursoIdentidad({ codigo }) {
   const color = colorCurso(codigo);
   const curso = CURSOS.find((c) => c.codigo === codigo);
   return (
-    <span className={`inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-full font-medium whitespace-nowrap ${color.badge}`}>
+    <span className={`inline-flex items-center gap-1 text-[12px] px-1.5 py-0.5 rounded-full font-medium whitespace-nowrap ${color.badge}`}>
       <span className={`w-1.5 h-1.5 rounded-full ${color.dot}`} />
       {curso?.nombre || codigo}
     </span>
@@ -290,7 +290,7 @@ export default function DocentesPage() {
       </div>
 
       <div className="flex items-center gap-1.5 flex-wrap mb-4 -mt-2.5">
-        <span className="text-[11px] text-textMuted font-medium shrink-0">Curso:</span>
+        <span className="text-[12px] text-textMuted font-medium shrink-0">Curso:</span>
         {CURSOS.map((c) => {
           const activo = filtroCursos.includes(c.codigo);
           const color = colorCurso(c.codigo);
@@ -299,7 +299,7 @@ export default function DocentesPage() {
               key={c.codigo}
               type="button"
               onClick={() => toggleFiltroCurso(c.codigo)}
-              className={`inline-flex items-center gap-1.5 text-[11px] px-2.5 py-1 rounded-full font-medium whitespace-nowrap border transition-all ${
+              className={`inline-flex items-center gap-1.5 text-[12px] px-2.5 py-1 rounded-full font-medium whitespace-nowrap border transition-all ${
                 activo
                   ? `${color.badge} border-transparent ring-1 ring-inset ring-current`
                   : 'bg-surface2 border-border text-textMuted hover:border-accentTeal hover:text-textSec'
@@ -360,7 +360,7 @@ export default function DocentesPage() {
                   className={nombreDuplicado ? inputCls.replace('border-border', 'border-warningText') : inputCls}
                 />
                 {nombreDuplicado && (
-                  <p className="text-warningText text-[11px] mt-1">⚠ Ya existe alguien con ese nombre en el listado — duplicado.</p>
+                  <p className="text-warningText text-[12px] mt-1">⚠ Ya existe alguien con ese nombre en el listado — duplicado.</p>
                 )}
               </div>
               <div>
@@ -386,7 +386,7 @@ export default function DocentesPage() {
                     </ChipCurso>
                   ))}
                 </div>
-                <p className="text-[11px] text-textMuted mt-1.5">Si la persona es solo Staff, puede dejarse sin cursos.</p>
+                <p className="text-[12px] text-textMuted mt-1.5">Si la persona es solo Staff, puede dejarse sin cursos.</p>
               </div>
               <div className="flex gap-2 pt-1">
                 <button type="submit" className={btnCls}>Agregar</button>
@@ -454,14 +454,14 @@ function FilaDocente({ d, puedeRoster, onActualizar, tieneAcceso, onCrearAcceso 
 
         <div className="flex items-center gap-1 shrink-0">
           {rolesActuales.map((r) => (
-            <span key={r} className={`text-[10px] px-1.5 py-0.5 rounded-full font-semibold whitespace-nowrap ${ROL_BADGE[r] || 'bg-surface text-textMuted'}`}>
+            <span key={r} className={`text-[12px] px-1.5 py-0.5 rounded-full font-semibold whitespace-nowrap ${ROL_BADGE[r] || 'bg-surface text-textMuted'}`}>
               {ROL_ICONO[r] || ''} {r}
             </span>
           ))}
           {puedeRoster && (
             <span
               title={tieneAcceso ? 'Tiene acceso al sistema' : 'Todavía no tiene acceso al sistema'}
-              className={`text-[10px] px-1.5 py-0.5 rounded-full font-semibold whitespace-nowrap ${tieneAcceso ? 'bg-successBg text-successText' : 'bg-surface text-textMuted'}`}
+              className={`text-[12px] px-1.5 py-0.5 rounded-full font-semibold whitespace-nowrap ${tieneAcceso ? 'bg-successBg text-successText' : 'bg-surface text-textMuted'}`}
             >
               {tieneAcceso ? '● Acceso' : '○ Sin acceso'}
             </span>
@@ -472,7 +472,7 @@ function FilaDocente({ d, puedeRoster, onActualizar, tieneAcceso, onCrearAcceso 
 
         <div className="flex-1 flex items-center gap-1 overflow-hidden min-w-0">
           {cursos.slice(0, 3).map((c) => <ChipCursoIdentidad key={c} codigo={c} />)}
-          {cursos.length > 3 && <span className="text-[10px] text-textMuted shrink-0">+{cursos.length - 3}</span>}
+          {cursos.length > 3 && <span className="text-[12px] text-textMuted shrink-0">+{cursos.length - 3}</span>}
         </div>
 
         <span className="text-accentTeal text-xs font-medium shrink-0 whitespace-nowrap">
@@ -485,7 +485,7 @@ function FilaDocente({ d, puedeRoster, onActualizar, tieneAcceso, onCrearAcceso 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 mt-4">
             {/* A: Información personal */}
             <div>
-              <p className="text-[10.5px] text-textMuted font-semibold uppercase tracking-wide mb-2">Información personal</p>
+              <p className="text-[12px] text-textMuted font-semibold uppercase tracking-wide mb-2">Información personal</p>
               <div className="bg-bg border border-border rounded-lg px-3 py-2.5">
                 <p className="text-sm font-semibold">{d.nombre}</p>
                 <p className="text-textMuted text-xs mt-0.5">{d.email}</p>
@@ -494,9 +494,9 @@ function FilaDocente({ d, puedeRoster, onActualizar, tieneAcceso, onCrearAcceso 
 
             {/* B: Cursos (+ Rol, van juntos porque definen el mismo tipo de asignación) */}
             <div>
-              <p className="text-[10.5px] text-textMuted font-semibold uppercase tracking-wide mb-2">Rol y cursos</p>
+              <p className="text-[12px] text-textMuted font-semibold uppercase tracking-wide mb-2">Rol y cursos</p>
               <div className="bg-bg border border-border rounded-lg px-3 py-2.5">
-                <p className="text-[10.5px] text-textMuted font-medium mb-1.5">Rol</p>
+                <p className="text-[12px] text-textMuted font-medium mb-1.5">Rol</p>
                 <div className="flex gap-1.5 flex-wrap mb-3">
                   {ROLES_ROSTER.map((r) => (
                     <ChipCurso key={r} activo={roles.includes(r)} disabled={!puedeRoster} onClick={() => toggleRol(r)}>
@@ -504,7 +504,7 @@ function FilaDocente({ d, puedeRoster, onActualizar, tieneAcceso, onCrearAcceso 
                     </ChipCurso>
                   ))}
                 </div>
-                <p className="text-[10.5px] text-textMuted font-medium mb-1.5">Cursos que dicta</p>
+                <p className="text-[12px] text-textMuted font-medium mb-1.5">Cursos que dicta</p>
                 <div className="flex gap-1.5 flex-wrap">
                   {CURSOS.map((c) => (
                     <ChipCurso key={c.codigo} activo={cursos.includes(c.codigo)} disabled={!puedeRoster} onClick={() => toggleCurso(c.codigo)}>
@@ -518,7 +518,7 @@ function FilaDocente({ d, puedeRoster, onActualizar, tieneAcceso, onCrearAcceso 
             {/* C: Acceso al sistema — Coordinación y SuperAdmin, siempre separado como sección propia */}
             {puedeRoster && (
               <div className="md:col-span-2">
-                <p className="text-[10.5px] text-textMuted font-semibold uppercase tracking-wide mb-2">Acceso al sistema</p>
+                <p className="text-[12px] text-textMuted font-semibold uppercase tracking-wide mb-2">Acceso al sistema</p>
                 <div className="bg-bg border border-border rounded-lg px-3 py-2.5">
                   <p className="text-xs mb-2">
                     <span className={tieneAcceso ? 'text-successText font-medium' : 'text-textMuted'}>
@@ -550,7 +550,7 @@ function FilaDocente({ d, puedeRoster, onActualizar, tieneAcceso, onCrearAcceso 
                     </button>
                   </div>
                   {password.length > 0 && password.length < 8 && (
-                    <p className="text-dangerText text-[11px] mt-1">La contraseña tiene que tener al menos 8 caracteres (le faltan {8 - password.length}).</p>
+                    <p className="text-dangerText text-[12px] mt-1">La contraseña tiene que tener al menos 8 caracteres (le faltan {8 - password.length}).</p>
                   )}
                 </div>
               </div>

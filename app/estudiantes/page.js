@@ -63,7 +63,7 @@ export default function EstudiantesPage() {
                 <p className="text-sm font-medium">{es.nombre}</p>
                 <p className="text-xs text-textSec">{es.edicionCurso} — Edición {es.edicionNumero}</p>
               </div>
-              <span className={`text-[10.5px] px-2 py-0.5 rounded-full font-semibold ${(COLOR_ESTADO[es.estado] || {}).bg} ${(COLOR_ESTADO[es.estado] || {}).text}`}>
+              <span className={`text-[12px] px-2 py-0.5 rounded-full font-semibold ${(COLOR_ESTADO[es.estado] || {}).bg} ${(COLOR_ESTADO[es.estado] || {}).text}`}>
                 {es.estado}
               </span>
             </Link>

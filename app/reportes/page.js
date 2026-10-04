@@ -232,7 +232,7 @@ export default function ReportesPage() {
           <div className="bg-surface2 border border-border rounded-2xl p-4 mb-5">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-3">
               <div>
-                <label className="text-[11px] text-textSec block mb-1 font-medium">Curso</label>
+                <label className="text-[12px] text-textSec block mb-1 font-medium">Curso</label>
                 <div className="flex gap-1.5 flex-wrap">
                   <button className={chipCls(borrador.cursos.length === 0)} onClick={() => setBorrador((p) => ({ ...p, cursos: [] }))}>Todos</button>
                   {cursosPresentes.map((c) => (
@@ -243,7 +243,7 @@ export default function ReportesPage() {
                 </div>
               </div>
               <div>
-                <label className="text-[11px] text-textSec block mb-1 font-medium">Docente</label>
+                <label className="text-[12px] text-textSec block mb-1 font-medium">Docente</label>
                 <select
                   value={borrador.docente} onChange={(e) => setBorrador((p) => ({ ...p, docente: e.target.value }))}
                   className="w-full bg-bg border border-border rounded-lg px-2.5 py-2 text-xs"
@@ -253,7 +253,7 @@ export default function ReportesPage() {
                 </select>
               </div>
               <div>
-                <label className="text-[11px] text-textSec block mb-1 font-medium">Estado de la edición</label>
+                <label className="text-[12px] text-textSec block mb-1 font-medium">Estado de la edición</label>
                 <select
                   value={borrador.estado} onChange={(e) => setBorrador((p) => ({ ...p, estado: e.target.value }))}
                   className="w-full bg-bg border border-border rounded-lg px-2.5 py-2 text-xs"
@@ -263,7 +263,7 @@ export default function ReportesPage() {
                 </select>
               </div>
               <div>
-                <label className="text-[11px] text-textSec block mb-1 font-medium">Rango de fechas (inicio de edición)</label>
+                <label className="text-[12px] text-textSec block mb-1 font-medium">Rango de fechas (inicio de edición)</label>
                 <div className="flex items-center gap-1.5">
                   <input type="date" value={borrador.desde} onChange={(e) => setBorrador((p) => ({ ...p, desde: e.target.value }))} className="bg-bg border border-border rounded-lg px-2 py-1.5 text-xs w-full" />
                   <span className="text-textMuted text-xs">a</span>
@@ -284,7 +284,7 @@ export default function ReportesPage() {
             {chipsActivos.length > 0 && (
               <div className="flex flex-wrap gap-1.5 mt-3 pt-3 border-t border-border">
                 {chipsActivos.map((chip) => (
-                  <span key={`${chip.tipo}-${chip.valor}`} className="text-[11px] bg-bg border border-border rounded-full pl-2.5 pr-1.5 py-1 flex items-center gap-1.5">
+                  <span key={`${chip.tipo}-${chip.valor}`} className="text-[12px] bg-bg border border-border rounded-full pl-2.5 pr-1.5 py-1 flex items-center gap-1.5">
                     {chip.label}
                     <button onClick={() => quitarChip(chip)} className="text-textMuted hover:text-dangerText">✕</button>
                   </span>
@@ -316,19 +316,19 @@ export default function ReportesPage() {
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
                 <div className="bg-surface2 border border-border rounded-xl p-3">
                   <p className="text-lg font-bold">{kpis.totalEstudiantes}</p>
-                  <p className="text-[11px] text-textMuted">Total de estudiantes</p>
+                  <p className="text-[12px] text-textMuted">Total de estudiantes</p>
                 </div>
                 <div className="bg-surface2 border border-border rounded-xl p-3">
                   <p className="text-lg font-bold text-successText">{kpis.totalPresentes}</p>
-                  <p className="text-[11px] text-textMuted">Presentes</p>
+                  <p className="text-[12px] text-textMuted">Presentes</p>
                 </div>
                 <div className="bg-surface2 border border-border rounded-xl p-3">
                   <p className="text-lg font-bold text-dangerText">{kpis.totalAusentes}</p>
-                  <p className="text-[11px] text-textMuted">Ausentes</p>
+                  <p className="text-[12px] text-textMuted">Ausentes</p>
                 </div>
                 <div className="bg-surface2 border border-border rounded-xl p-3">
                   <p className="text-lg font-bold">{kpis.pctAsistencia === null ? '—' : `${kpis.pctAsistencia}%`}</p>
-                  <p className="text-[11px] text-textMuted">Porcentaje de asistencia</p>
+                  <p className="text-[12px] text-textMuted">Porcentaje de asistencia</p>
                 </div>
               </div>
 
@@ -374,7 +374,7 @@ export default function ReportesPage() {
                             <div className="flex items-center gap-2">
                               <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${color.dot}`} />
                               <span>{f.edicion.nombreCurso} — Ed. {f.edicion.numero}</span>
-                              <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-semibold shrink-0 ${BADGE_ESTADO_EDICION[estadoCalculado(f.edicion)] || 'bg-surface text-textMuted'}`}>
+                              <span className={`text-[12px] px-1.5 py-0.5 rounded-full font-semibold shrink-0 ${BADGE_ESTADO_EDICION[estadoCalculado(f.edicion)] || 'bg-surface text-textMuted'}`}>
                                 {LABEL_ESTADO_EDICION[estadoCalculado(f.edicion)] || f.edicion.estado}
                               </span>
                             </div>

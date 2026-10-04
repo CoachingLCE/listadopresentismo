@@ -63,10 +63,10 @@ export default function CredencialesZoomPage() {
         </div>
       </div>
 
-      <p className="text-[11px] text-textMuted mb-1">
+      <p className="text-[12px] text-textMuted mb-1">
         "Abrir" lleva directo a la pantalla de inicio de sesión de Zoom, en una pestaña nueva — Zoom no permite completar el usuario y la contraseña automáticamente por seguridad, así que hay que pegarlos ahí (los tenés justo al lado, en la tabla).
       </p>
-      <p className="text-[11px] text-textMuted">
+      <p className="text-[12px] text-textMuted">
         Si cambia alguna contraseña, avisale a quien administra disponibilidad-zoom para que la actualice ahí — y también acá, en el código (esta tabla es una copia, no se actualiza sola).
       </p>
     </div>

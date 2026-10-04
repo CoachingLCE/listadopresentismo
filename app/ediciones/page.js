@@ -222,7 +222,7 @@ export default function EdicionesPage() {
                   <span className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${color.dot}`} />
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className={`text-[10.5px] px-1.5 py-0.5 rounded-full font-semibold shrink-0 ${color.badge}`}>{nombreCurso(e.curso)}</span>
+                      <span className={`text-[12px] px-1.5 py-0.5 rounded-full font-semibold shrink-0 ${color.badge}`}>{nombreCurso(e.curso)}</span>
                       <p className="font-semibold text-sm">Edición {e.numero}</p>
                     </div>
                     <p className="text-textSec text-xs mt-1">
@@ -233,7 +233,7 @@ export default function EdicionesPage() {
                   </div>
                 </div>
                 <div className="flex items-center gap-3 shrink-0">
-                  <span className={`text-[11px] px-2 py-1 rounded-full font-semibold ${BADGE_ESTADO_EDICION[estado] || 'bg-surface text-textMuted'}`}>
+                  <span className={`text-[12px] px-2 py-1 rounded-full font-semibold ${BADGE_ESTADO_EDICION[estado] || 'bg-surface text-textMuted'}`}>
                     {LABEL_ESTADO_EDICION[estado] || estado}
                   </span>
                   {superAdmin && (

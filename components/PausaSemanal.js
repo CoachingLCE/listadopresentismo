@@ -35,8 +35,8 @@ export default function PausaSemanal() {
   return (
     <div className="rounded-xl px-4 py-2.5 mb-4 -mt-1 flex items-start gap-3 bg-surface2/40 border border-border/50">
       <div className="min-w-0">
-        <p className="text-[11.5px] font-medium text-textSec">{mensaje.titulo}</p>
-        <p className="text-[11px] text-textMuted leading-snug mt-0.5">
+        <p className="text-[12px] font-medium text-textSec">{mensaje.titulo}</p>
+        <p className="text-[12px] text-textMuted leading-snug mt-0.5">
           {mensaje.texto}{' '}
           <a
             href={LINK_BLOG}

@@ -106,8 +106,8 @@ export default function EmailsPage() {
               <p className="text-sm font-semibold text-warningText mb-1">✉ El envío automático todavía no está activo</p>
               <p className="text-xs text-textSec">
                 Lo que ves abajo es una vista previa — así van a quedar los mails el día que se manden, pero por
-                ahora no sale ninguno. Para prenderlo hace falta cargar <code className="text-[11px]">GMAIL_USER</code>,{' '}
-                <code className="text-[11px]">GMAIL_APP_PASSWORD</code> y <code className="text-[11px]">CRON_SECRET</code> en
+                ahora no sale ninguno. Para prenderlo hace falta cargar <code className="text-[12px]">GMAIL_USER</code>,{' '}
+                <code className="text-[12px]">GMAIL_APP_PASSWORD</code> y <code className="text-[12px]">CRON_SECRET</code> en
                 las variables de entorno de Vercel, y crear la pestaña &quot;AlertasEnviadas&quot; (y opcionalmente
                 &quot;EmailsEnviados&quot;, para el registro de abajo) en el Google Sheet — los pasos exactos están en SETUP.md.
               </p>
@@ -154,7 +154,7 @@ export default function EmailsPage() {
                         ) : (
                           <div className="flex flex-wrap gap-1">
                             {datos.destinatarios.map((email) => (
-                              <span key={email} className="text-[10.5px] px-1.5 py-0.5 rounded-full bg-surface border border-border text-textSec">{email}</span>
+                              <span key={email} className="text-[12px] px-1.5 py-0.5 rounded-full bg-surface border border-border text-textSec">{email}</span>
                             ))}
                           </div>
                         )}
@@ -162,7 +162,7 @@ export default function EmailsPage() {
                       <td className="px-3 py-3 text-xs text-textSec whitespace-nowrap">Instituto ILCE</td>
                       <td className="px-3 py-3 text-xs">{datos.vistaPrevia?.asunto || <span className="text-textMuted">— (sin alertas para armar un ejemplo)</span>}</td>
                       <td className="px-3 py-3">
-                        <span className="text-[10.5px] px-2 py-0.5 rounded-full font-semibold bg-infoBg text-infoText whitespace-nowrap">Resumen de alertas</span>
+                        <span className="text-[12px] px-2 py-0.5 rounded-full font-semibold bg-infoBg text-infoText whitespace-nowrap">Resumen de alertas</span>
                       </td>
                       <td className="px-3 py-3 text-right">
                         {datos.vistaPrevia && (
@@ -264,7 +264,7 @@ function ListaAlertas({ titulo, items, vacio }) {
             <div key={a.clave} className="bg-surface2 border border-border rounded-xl p-3.5">
               <div className="flex items-start justify-between gap-2 mb-1">
                 <p className="text-sm font-medium">{a.texto}</p>
-                <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-semibold shrink-0 whitespace-nowrap ${NIVEL_BADGE[a.nivel] || 'bg-surface text-textMuted'}`}>
+                <span className={`text-[12px] px-1.5 py-0.5 rounded-full font-semibold shrink-0 whitespace-nowrap ${NIVEL_BADGE[a.nivel] || 'bg-surface text-textMuted'}`}>
                   {NIVEL_LABEL[a.nivel] || a.nivel}
                 </span>
               </div>

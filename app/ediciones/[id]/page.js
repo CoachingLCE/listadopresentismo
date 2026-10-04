@@ -264,9 +264,9 @@ export default function EdicionDetallePage() {
     <div className="max-w-[1300px] mx-auto px-6 pb-24 pt-10">
       <Link href="/ediciones" className="text-textMuted text-xs underline">← Volver a ediciones</Link>
       <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-        <span className={`text-[10.5px] px-1.5 py-0.5 rounded-full font-semibold ${color.badge}`}>{nombreCurso(edicion.curso)}</span>
+        <span className={`text-[12px] px-1.5 py-0.5 rounded-full font-semibold ${color.badge}`}>{nombreCurso(edicion.curso)}</span>
         <h1 className="text-xl">Edición {edicion.numero}</h1>
-        <span className={`text-[10.5px] px-1.5 py-0.5 rounded-full font-semibold ${BADGE_ESTADO_EDICION[estado] || 'bg-surface text-textMuted'}`}>
+        <span className={`text-[12px] px-1.5 py-0.5 rounded-full font-semibold ${BADGE_ESTADO_EDICION[estado] || 'bg-surface text-textMuted'}`}>
           {LABEL_ESTADO_EDICION[estado] || estado}
         </span>
       </div>
@@ -296,7 +296,7 @@ export default function EdicionDetallePage() {
               Estado <span className="text-textMuted font-normal">(se calcula solo según las fechas)</span>
             </label>
             <div className="flex items-center gap-2">
-              <span className={`text-[11px] px-2 py-1.5 rounded-lg font-semibold ${BADGE_ESTADO_EDICION[estado] || 'bg-surface text-textMuted'}`}>
+              <span className={`text-[12px] px-2 py-1.5 rounded-lg font-semibold ${BADGE_ESTADO_EDICION[estado] || 'bg-surface text-textMuted'}`}>
                 {LABEL_ESTADO_EDICION[estado] || estado}
               </span>
               {estado === 'Suspendida' ? (
@@ -353,7 +353,7 @@ export default function EdicionDetallePage() {
             ))}
           </div>
 
-          <div className="flex flex-wrap gap-3 mb-3 text-[10.5px] text-textMuted items-center">
+          <div className="flex flex-wrap gap-3 mb-3 text-[12px] text-textMuted items-center">
             <span className="font-semibold text-textSec">Referencias:</span>
             {ESTADOS_PRESENTISMO.map((e) => (
               <span key={e} className="flex items-center gap-1 cursor-help" title={LABEL_PRESENTISMO[e]}>
@@ -381,7 +381,7 @@ export default function EdicionDetallePage() {
                         className={`px-1.5 py-2.5 border-b-2 border-l border-border text-center min-w-[54px] font-normal ${est.clase} ${est.esHoy ? `${est.fondo} border-b-accentPurple` : 'border-b-border'}`}
                       >
                         #{c.numero}<br />{c.fecha.slice(5)}
-                        {est.esHoy && <><br /><span className="text-[9px] font-bold">HOY</span></>}
+                        {est.esHoy && <><br /><span className="text-[12px] font-bold">HOY</span></>}
                       </th>
                     );
                   })}
@@ -420,12 +420,12 @@ export default function EdicionDetallePage() {
                         </div>
                       </td>
                       <td className="sticky left-[220px] z-10 bg-inherit px-2 py-2 border-b border-r border-border">
-                        <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-semibold whitespace-nowrap ${colorEstado.bg} ${colorEstado.text}`}>
+                        <span className={`text-[12px] px-1.5 py-0.5 rounded-full font-semibold whitespace-nowrap ${colorEstado.bg} ${colorEstado.text}`}>
                           {est.estado}
                         </span>
                       </td>
                       <td className="px-2 py-2 border-b border-border">
-                        <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-semibold ${colorAlerta.bg} ${colorAlerta.text}`}>
+                        <span className={`text-[12px] px-1.5 py-0.5 rounded-full font-semibold ${colorAlerta.bg} ${colorAlerta.text}`}>
                           {alerta}
                         </span>
                       </td>
@@ -456,7 +456,7 @@ export default function EdicionDetallePage() {
                               value={estado}
                               onChange={(ev) => marcarPresentismo(est.id, c.id, ev.target.value)}
                               style={estado ? { backgroundColor: COLOR_PRESENTISMO_HEX[estado]?.bg, color: COLOR_PRESENTISMO_HEX[estado]?.text } : undefined}
-                              className="w-full text-[10.5px] rounded px-0.5 py-1 border-0 text-center disabled:opacity-40 disabled:cursor-not-allowed bg-transparent text-textMuted"
+                              className="w-full text-[12px] rounded px-0.5 py-1 border-0 text-center disabled:opacity-40 disabled:cursor-not-allowed bg-transparent text-textMuted"
                             >
                               <option value="" style={{ backgroundColor: 'rgb(var(--color-surface2))', color: 'rgb(var(--color-textMuted))' }}>·</option>
                               {ESTADOS_PRESENTISMO.map((e) => (
@@ -498,7 +498,7 @@ export default function EdicionDetallePage() {
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 mb-4">
                 {Object.entries(ICONO_INDICADOR).map(([campo, cfg]) => (
                   <div key={campo} className={`rounded-xl border border-border p-3 ${cfg.bg}`}>
-                    <p className="text-[11px] text-textSec font-medium flex items-center gap-1">{cfg.icono} {cfg.label}</p>
+                    <p className="text-[12px] text-textSec font-medium flex items-center gap-1">{cfg.icono} {cfg.label}</p>
                     <p className={`text-xl font-bold mt-0.5 ${cfg.text}`}>{resumen[campo]}</p>
                   </div>
                 ))}
@@ -508,20 +508,20 @@ export default function EdicionDetallePage() {
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 mb-5">
                 <div className="bg-bg border border-border rounded-xl p-3.5 flex items-center justify-between">
                   <div>
-                    <p className="text-[11px] text-textMuted">Estudiantes</p>
+                    <p className="text-[12px] text-textMuted">Estudiantes</p>
                     <p className="text-2xl font-bold">{resumen.cantidadEstudiantes}</p>
                   </div>
                 </div>
                 <div className="bg-bg border border-border rounded-xl p-3.5 flex items-center justify-between">
                   <div>
-                    <p className="text-[11px] text-textMuted">Presentismo</p>
+                    <p className="text-[12px] text-textMuted">Presentismo</p>
                     <p className="text-2xl font-bold">{resumen.porcentajePresentismo === null ? '—' : `${resumen.porcentajePresentismo}%`}</p>
                   </div>
                   <AnilloPresentismo pct={resumen.porcentajePresentismo} />
                 </div>
                 <div className="bg-bg border border-border rounded-xl p-3.5 flex items-center justify-between">
                   <div>
-                    <p className="text-[11px] text-textMuted">Bajas</p>
+                    <p className="text-[12px] text-textMuted">Bajas</p>
                     <p className={`text-2xl font-bold ${resumen.porcentajeBajas > 0 ? 'text-dangerText' : ''}`}>{resumen.porcentajeBajas}%</p>
                   </div>
                 </div>
@@ -554,13 +554,13 @@ function PanelEstudiante({ estudiante, gestion, puedeNotas, edicionId, onActuali
     <div className="absolute z-20 top-full left-0 mt-2 mb-1 p-3 bg-bg border border-border rounded-lg shadow-lg w-[320px] font-normal">
       {gestion && (
         <div className="mb-2">
-          <label className="text-[10.5px] text-textSec block mb-1">Estado del estudiante</label>
+          <label className="text-[12px] text-textSec block mb-1">Estado del estudiante</label>
           <div className="flex gap-1.5 flex-wrap">
             {ESTADOS_ESTUDIANTE.map((s) => (
               <button
                 key={s} type="button"
                 onClick={() => { setEstado(s); onActualizar({ estado: s }); }}
-                className={`text-[10.5px] px-2 py-1 rounded-full border ${estado === s ? 'bg-accentPurple text-white border-transparent' : 'border-border text-textSec'}`}
+                className={`text-[12px] px-2 py-1 rounded-full border ${estado === s ? 'bg-accentPurple text-white border-transparent' : 'border-border text-textSec'}`}
               >
                 {s}
               </button>
@@ -570,16 +570,16 @@ function PanelEstudiante({ estudiante, gestion, puedeNotas, edicionId, onActuali
       )}
       {puedeNotas && (
         <div className="mb-2">
-          <label className="text-[10.5px] text-textSec block mb-1">Observaciones</label>
-          <textarea value={obs} onChange={(e) => setObs(e.target.value)} rows={3} className="w-full bg-surface2 border border-border rounded-lg px-2 py-1.5 text-[11px]" />
+          <label className="text-[12px] text-textSec block mb-1">Observaciones</label>
+          <textarea value={obs} onChange={(e) => setObs(e.target.value)} rows={3} className="w-full bg-surface2 border border-border rounded-lg px-2 py-1.5 text-[12px]" />
           <button type="button" onClick={() => onActualizar({ observaciones: obs })} className={`${btnSecCls} mt-1.5`}>Guardar observaciones</button>
         </div>
       )}
       <div className="flex justify-between items-center">
-        <Link href={`/seguimiento?estudianteId=${estudiante.id}&edicionId=${edicionId}`} className="text-[10.5px] text-accentTeal underline">
+        <Link href={`/seguimiento?estudianteId=${estudiante.id}&edicionId=${edicionId}`} className="text-[12px] text-accentTeal underline">
           + Registrar seguimiento
         </Link>
-        <button type="button" onClick={onCerrar} className="text-[10.5px] text-textMuted">Cerrar</button>
+        <button type="button" onClick={onCerrar} className="text-[12px] text-textMuted">Cerrar</button>
       </div>
     </div>
   );
