@@ -443,16 +443,16 @@ function FilaDocente({ d, puedeRoster, onActualizar, tieneAcceso, onCrearAcceso 
 
   return (
     <div className="bg-surface2 border border-border rounded-xl transition-colors hover:border-accentTeal/40">
-      <button type="button" onClick={() => setAbierto((v) => !v)} className="w-full flex items-center gap-3 px-3.5 py-2.5 text-left">
+      <button type="button" onClick={() => setAbierto((v) => !v)} className="w-full flex flex-wrap sm:flex-nowrap items-center gap-x-3 gap-y-1.5 px-3.5 py-2.5 text-left">
         <span className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${estiloAvatar(d.email)}`}>
           {iniciales(d.nombre)}
         </span>
 
-        <div className="flex items-center gap-2 min-w-[160px] shrink-0">
+        <div className="flex items-center gap-2 min-w-0 flex-1 sm:flex-none sm:min-w-[160px] sm:shrink-0">
           <p className="font-semibold text-sm leading-tight truncate max-w-[180px]">{d.nombre}</p>
         </div>
 
-        <div className="flex items-center gap-1 shrink-0">
+        <div className="flex items-center gap-1 flex-wrap sm:shrink-0">
           {rolesActuales.map((r) => (
             <span key={r} className={`text-[12px] px-1.5 py-0.5 rounded-full font-semibold whitespace-nowrap ${ROL_BADGE[r] || 'bg-surface text-textMuted'}`}>
               {ROL_ICONO[r] || ''} {r}
