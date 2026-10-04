@@ -35,8 +35,18 @@ export default function Nav() {
   const pathname = usePathname();
   const [cambiandoPassword, setCambiandoPassword] = useState(false);
   const [personas, setPersonas] = useState([]);
+  const [menuAbierto, setMenuAbierto] = useState(false);
 
   const puedeVerComo = usuarioReal ? puedeVerComoOtro(usuarioReal) : false;
+
+  // En celular el menú se cierra solo al cambiar de pantalla, y con Esc.
+  useEffect(() => { setMenuAbierto(false); }, [pathname]);
+  useEffect(() => {
+    if (!menuAbierto) return undefined;
+    const cerrarConEsc = (ev) => { if (ev.key === 'Escape') setMenuAbierto(false); };
+    document.addEventListener('keydown', cerrarConEsc);
+    return () => document.removeEventListener('keydown', cerrarConEsc);
+  }, [menuAbierto]);
 
   useEffect(() => {
     if (!puedeVerComo) return;
@@ -76,8 +86,8 @@ export default function Nav() {
   }
 
   return (
-    <div className="max-w-[1440px] mx-auto px-6 pt-4">
-      <div className="flex items-center justify-between mb-3 gap-3 flex-wrap">
+    <div className="max-w-[1440px] mx-auto px-6 pt-4 flex flex-col">
+      <div className="order-1 flex items-center justify-between mb-3 gap-3 flex-wrap">
         <Link href="/ediciones" className="flex items-center gap-2 shrink-0">
           <Logo height={28} />
           <span className="text-sm font-bold text-textMuted">Presentismo</span>
@@ -111,7 +121,7 @@ export default function Nav() {
         </div>
       </div>
 
-      <div className="animacion-iluminar bg-gradient-to-br from-accentPurple/10 to-accentTeal/5 border border-accentPurple/20 rounded-2xl px-4 py-3 mb-4 flex items-start gap-3">
+      <div className="order-4 md:order-2 animacion-iluminar bg-gradient-to-br from-accentPurple/10 to-accentTeal/5 border border-accentPurple/20 rounded-2xl px-4 py-3 mb-4 flex items-start gap-3">
         <span className="w-8 h-8 rounded-full bg-gradient-to-br from-accentPurple to-accentMagenta flex items-center justify-center text-white text-sm shrink-0">🧭</span>
         <div>
           <p className="text-[13px] font-semibold text-text">Acompañamos, observamos e intervenimos.</p>
@@ -123,17 +133,55 @@ export default function Nav() {
         </div>
       </div>
 
-      <PausaSemanal />
+      <div className="order-5 md:order-3">
+        <PausaSemanal />
+      </div>
 
       {verComo && (
-        <div className="bg-gradient-to-r from-accentPurple to-accentMagenta text-white text-xs font-semibold rounded-lg px-3.5 py-2 mb-3 flex items-center justify-between gap-2 flex-wrap">
+        <div className="order-2 md:order-4 bg-gradient-to-r from-accentPurple to-accentMagenta text-white text-xs font-semibold rounded-lg px-3.5 py-2 mb-3 flex items-center justify-between gap-2 flex-wrap">
           <span>👁 Viendo como: {verComo.nombre} ({verComo.roles.join(', ')}) — modo solo lectura, no se guarda nada.</span>
           <button onClick={salirVerComo} className="underline shrink-0">Salir del modo vista</button>
         </div>
       )}
 
-      <nav className="mb-5 flex items-center gap-1.5 flex-wrap">
-        {links.map((l) => itemNav(l.href, l.label, pathname))}
+      <nav className="mb-5 order-3 md:order-5" aria-label="Principal">
+        {/* Pantallas medianas y grandes: todos los botones en una fila */}
+        <div className="hidden md:flex items-center gap-1.5 flex-wrap">
+          {links.map((l) => itemNav(l.href, l.label, pathname))}
+        </div>
+
+        {/* Celular: un solo botón con la pantalla actual que despliega la lista (antes eran 11 botones apilados) */}
+        <div className="md:hidden">
+          <button
+            type="button"
+            onClick={() => setMenuAbierto((v) => !v)}
+            aria-expanded={menuAbierto}
+            className="w-full h-11 flex items-center justify-between px-4 rounded-xl bg-surface2 border border-border text-sm font-semibold"
+          >
+            <span className="flex items-center gap-2">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" /></svg>
+              {(links.find((l) => l.href === pathname) || links[0]).label}
+            </span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className={`transition-transform ${menuAbierto ? 'rotate-180' : ''}`}><path d="m6 9 6 6 6-6" /></svg>
+          </button>
+          {menuAbierto && (
+            <div className="mt-2 grid gap-1 rounded-xl border border-border bg-surface p-1.5 shadow-lg">
+              {links.map((l) => (
+                <Link
+                  key={l.href}
+                  href={l.href}
+                  className={`h-11 flex items-center px-3.5 rounded-lg text-sm font-medium transition-colors ${
+                    pathname === l.href
+                      ? 'bg-gradient-to-r from-accentPurple to-accentMagenta text-white'
+                      : 'text-textSec hover:bg-surface2 hover:text-text'
+                  }`}
+                >
+                  {l.label}
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
       </nav>
 
       {cambiandoPassword && <CambiarPasswordModal onCerrar={() => setCambiandoPassword(false)} />}

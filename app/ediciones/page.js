@@ -3,12 +3,14 @@ import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useSession } from '../../lib/useSession';
+import { useDialogos } from '../../components/Dialogos';
 import { tienePermisoGestionAcademica, esSuperAdmin } from '../../lib/permisos';
 import { nombreCurso, colorCurso } from '../../lib/cursosLogic';
 import { estadoCalculado, LABEL_ESTADO_EDICION, BADGE_ESTADO_EDICION, ESTADOS_EDICION_CALCULADOS } from '../../lib/edicionesEstadoCliente';
 
 export default function EdicionesPage() {
   const { usuario, cargando, fetchAutenticado } = useSession();
+  const { confirmar } = useDialogos();
   const router = useRouter();
   const [ediciones, setEdiciones] = useState([]);
   const [cargandoLista, setCargandoLista] = useState(true);
@@ -51,9 +53,12 @@ export default function EdicionesPage() {
   async function borrarEdicion(e, edicion) {
     e.preventDefault();
     e.stopPropagation();
-    const confirmado = window.confirm(
-      `¿Borrar definitivamente ${nombreCurso(edicion.curso)} — Edición ${edicion.numero}?\n\nEsto borra también sus clases, estudiantes y presentismo cargado. No se puede deshacer.`
-    );
+    const confirmado = await confirmar({
+      titulo: 'Borrar edición',
+      mensaje: `¿Borrar definitivamente ${nombreCurso(edicion.curso)} — Edición ${edicion.numero}?\n\nEsto borra también sus clases, estudiantes y presentismo cargado. No se puede deshacer.`,
+      textoConfirmar: 'Borrar definitivamente',
+      peligro: true
+    });
     if (!confirmado) return;
     setBorrandoId(edicion.id);
     setError('');

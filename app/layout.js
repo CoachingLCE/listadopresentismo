@@ -3,6 +3,7 @@ import { SessionProvider } from '../lib/useSession';
 import { ThemeProvider } from '../lib/ThemeContext';
 import VersionBadge from '../components/VersionBadge';
 import Nav from '../components/Nav';
+import { DialogosProvider } from '../components/Dialogos';
 
 export const metadata = {
   title: 'Presentismo ILCE',
@@ -15,9 +16,11 @@ export default function RootLayout({ children }) {
       <body className="min-h-screen bg-bg text-text">
         <ThemeProvider>
           <SessionProvider>
-            <Nav />
-            {children}
-            <VersionBadge />
+            <DialogosProvider>
+              <Nav />
+              {children}
+              <VersionBadge />
+            </DialogosProvider>
           </SessionProvider>
         </ThemeProvider>
       </body>
