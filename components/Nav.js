@@ -14,6 +14,48 @@ function link(href, label) {
   return { href, label };
 }
 
+// ---- Barra lateral (escritorio) -------------------------------------------------------------
+// Pedido de Diego (04/10/2026): navegación "más estética y prolija". En pantallas grandes (>= lg)
+// los destinos pasan a una barra lateral fija; en tablet siguen los botones en fila y en celular el
+// menú desplegable.
+const ICONOS = {
+  ediciones: <><path d="m12 2 10 5-10 5L2 7l10-5z" /><path d="m2 17 10 5 10-5" /><path d="m2 12 10 5 10-5" /></>,
+  nueva: <><circle cx="12" cy="12" r="10" /><path d="M8 12h8M12 8v8" /></>,
+  equipo: <><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" /></>,
+  estudiantes: <><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></>,
+  asistencia: <><rect x="8" y="2" width="8" height="4" rx="1" /><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" /><path d="m9 14 2 2 4-4" /></>,
+  zoom: <><path d="m22 8-6 4 6 4V8z" /><rect x="2" y="6" width="14" height="12" rx="2" /></>,
+  seguimiento: <><circle cx="12" cy="12" r="9" /><path d="m8 12 3 3 5-6" /></>,
+  reportes: <path d="M12 20V10M18 20V4M6 20v-4" />,
+  mail: <><rect x="2" y="4" width="20" height="16" rx="2" /><path d="m22 7-10 6L2 7" /></>,
+  reloj: <><circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" /></>,
+  llave: <><path d="m21 2-9.6 9.6M15.5 7.5l3 3L22 7l-3-3" /><circle cx="7.5" cy="15.5" r="5.5" /></>
+};
+const ICONO_POR_RUTA = {
+  '/ediciones': 'ediciones', '/nueva-edicion': 'nueva', '/docentes': 'equipo', '/estudiantes': 'estudiantes', '/carga': 'asistencia',
+  '/credenciales-zoom': 'zoom', '/seguimiento': 'seguimiento', '/reportes': 'reportes', '/emails': 'mail', '/historial': 'reloj', '/accesos': 'llave'
+};
+function Icono({ nombre, size = 18 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="shrink-0">
+      {ICONOS[nombre]}
+    </svg>
+  );
+}
+function ItemLateral({ href, label, pathname }) {
+  const activo = pathname === href;
+  return (
+    <Link href={href} aria-current={activo ? 'page' : undefined}
+      className={`relative flex items-center gap-2.5 h-9 px-3 rounded-lg text-[14px] transition-colors ${
+        activo ? 'bg-accentPurple/15 text-accentMagenta font-semibold' : 'text-textSec hover:text-text hover:bg-surface2 font-medium'
+      }`}>
+      {activo && <span className="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r bg-accentMagenta" />}
+      <Icono nombre={ICONO_POR_RUTA[href]} />
+      <span className="truncate">{label}</span>
+    </Link>
+  );
+}
+
 function itemNav(href, label, pathname) {
   return (
     <Link
@@ -38,6 +80,12 @@ export default function Nav() {
   const [menuAbierto, setMenuAbierto] = useState(false);
 
   const puedeVerComo = usuarioReal ? puedeVerComoOtro(usuarioReal) : false;
+
+  // Deja lugar a la barra lateral en pantallas grandes (ver .con-menu-lateral en globals.css).
+  useEffect(() => {
+    document.body.classList.add('con-menu-lateral');
+    return () => document.body.classList.remove('con-menu-lateral');
+  }, []);
 
   // En celular el menú se cierra solo al cambiar de pantalla, y con Esc.
   useEffect(() => { setMenuAbierto(false); }, [pathname]);
@@ -86,9 +134,35 @@ export default function Nav() {
   }
 
   return (
+    <>
+    {/* BARRA LATERAL — solo escritorio (>= lg) */}
+    <aside aria-label="Navegación principal" className="hidden lg:flex fixed inset-y-0 left-0 z-30 w-[248px] flex-col border-r border-border bg-surface no-print">
+      <div className="px-5 pt-5 pb-4">
+        <Link href="/ediciones" aria-label="Ir a Ediciones"><Logo height={30} /></Link>
+        <p className="mt-1.5 text-[12px] font-semibold tracking-[0.14em] uppercase text-textMuted">Presentismo</p>
+      </div>
+      <nav className="flex-1 overflow-y-auto px-3 pb-3 space-y-0.5">
+        {links.map((l) => <ItemLateral key={l.href} href={l.href} label={l.label} pathname={pathname} />)}
+      </nav>
+      {usuarioReal && (
+        <div className="border-t border-border px-4 py-3">
+          <div className="flex items-center gap-3">
+            <span aria-hidden="true" className="w-9 h-9 rounded-full bg-accentPurple/15 text-accentMagenta font-bold flex items-center justify-center text-[14px] shrink-0">
+              {(usuarioReal.nombre || '?').trim().charAt(0).toUpperCase()}
+            </span>
+            <p className="text-[13px] font-semibold leading-tight truncate min-w-0 flex-1">{usuarioReal.nombre}</p>
+          </div>
+          <div className="mt-2 flex gap-4 text-[12px]">
+            <button onClick={() => setCambiandoPassword(true)} className="text-textMuted hover:text-text underline">Contraseña</button>
+            <button onClick={logout} className="text-textMuted hover:text-text underline">Salir</button>
+          </div>
+        </div>
+      )}
+    </aside>
+
     <div className="max-w-[1440px] mx-auto px-6 pt-4 flex flex-col">
-      <div className="order-1 flex items-center justify-between mb-3 gap-3 flex-wrap">
-        <Link href="/ediciones" className="flex items-center gap-2 shrink-0">
+      <div className="order-1 flex items-center justify-between lg:justify-end mb-3 gap-3 flex-wrap">
+        <Link href="/ediciones" className="flex items-center gap-2 shrink-0 lg:hidden">
           <Logo height={28} />
           <span className="text-sm font-bold text-textMuted">Presentismo</span>
         </Link>
@@ -110,7 +184,7 @@ export default function Nav() {
           )}
           <ThemeSelector />
           {usuarioReal && (
-            <div className="text-right text-xs leading-tight">
+            <div className="text-right text-xs leading-tight lg:hidden">
               <p className="font-semibold">{usuarioReal.nombre}</p>
               <div className="flex gap-2 justify-end">
                 <button onClick={() => setCambiandoPassword(true)} className="text-textMuted underline">Contraseña</button>
@@ -146,7 +220,7 @@ export default function Nav() {
 
       <nav className="mb-5 order-3 md:order-5" aria-label="Principal">
         {/* Pantallas medianas y grandes: todos los botones en una fila */}
-        <div className="hidden md:flex items-center gap-1.5 flex-wrap">
+        <div className="hidden md:flex lg:hidden items-center gap-1.5 flex-wrap">
           {links.map((l) => itemNav(l.href, l.label, pathname))}
         </div>
 
@@ -187,5 +261,6 @@ export default function Nav() {
       {cambiandoPassword && <CambiarPasswordModal onCerrar={() => setCambiandoPassword(false)} />}
       <TourGuiado />
     </div>
+    </>
   );
 }
