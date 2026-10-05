@@ -117,7 +117,7 @@ export default function TourGuiado() {
         onClick={() => setMenuAbierto((v) => !v)}
         aria-label="Necesito ayuda"
         aria-expanded={menuAbierto}
-        className="fixed bottom-16 right-5 z-[90] h-12 w-12 sm:w-auto sm:px-4 justify-center bg-surface text-text border border-border text-sm font-semibold rounded-full shadow-lg flex items-center gap-2 hover:bg-surface2 transition-colors no-print"
+        className="fixed bottom-14 right-4 z-[90] h-12 w-12 sm:w-auto sm:px-4 justify-center bg-surface text-text border border-border text-sm font-semibold rounded-full shadow-lg flex items-center gap-2 hover:bg-surface2 transition-colors no-print"
       >
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-accentMagenta shrink-0" aria-hidden="true">
           <circle cx="12" cy="12" r="10" />
