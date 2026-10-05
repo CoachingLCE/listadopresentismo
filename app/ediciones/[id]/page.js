@@ -17,7 +17,7 @@ import { DistribucionEstados, LineaEvolucion } from '../../../components/reporte
 function estiloFechaClase(fechaISO, hoyISO) {
   if (!fechaISO) return { clase: 'text-textMuted', esHoy: false };
   const dias = Math.round((new Date(hoyISO + 'T00:00:00') - new Date(fechaISO + 'T00:00:00')) / (24 * 60 * 60 * 1000));
-  if (dias === 0) return { clase: 'text-accentPurple font-bold', esHoy: true, fondo: 'bg-accentPurple/10' };
+  if (dias === 0) return { clase: 'text-accentPurpleTxt font-bold', esHoy: true, fondo: 'bg-accentPurple/10' };
   if (dias > 0 && dias < 30) return { clase: 'text-textSec font-medium', esHoy: false };
   if (dias >= 30) return { clase: 'text-textMuted', esHoy: false };
   return { clase: 'text-infoText', esHoy: false }; // futura

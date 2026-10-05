@@ -8,7 +8,7 @@ import { tienePermisoVerHistorial } from '../../lib/permisos';
 // el mismo nombre siempre cae en el mismo color (hash simple sobre una paleta fija). Mismo
 // patrón que en /auditoria de Seguimiento Lead Estudiante.
 const PALETA_USUARIOS = [
-  { bg: 'bg-accentPurple/20', text: 'text-accentPurple' },
+  { bg: 'bg-accentPurple/20', text: 'text-accentPurpleTxt' },
   { bg: 'bg-accentTeal/20', text: 'text-accentTeal' },
   { bg: 'bg-successBg', text: 'text-successText' },
   { bg: 'bg-warningBg', text: 'text-warningText' },
@@ -26,7 +26,7 @@ function colorPorUsuario(nombre) {
 // Categoriza cada acción del historial (ver los `registrarAccion(...)` de la app) — se usa
 // tanto para los chips de filtro como para el color/ícono de cada fila.
 const CATEGORIAS_ACCION = [
-  { id: 'edicion', label: '📚 Edición', icono: '📚 ', clase: 'text-accentPurple font-semibold', test: (a) => a.toLowerCase().includes('edición') },
+  { id: 'edicion', label: '📚 Edición', icono: '📚 ', clase: 'text-accentPurpleTxt font-semibold', test: (a) => a.toLowerCase().includes('edición') },
   { id: 'docente', label: '👨‍🏫 Docente', icono: '👨‍🏫 ', clase: 'text-accentTeal font-medium', test: (a) => a.toLowerCase().includes('docente') },
   { id: 'estudiante', label: '🎓 Estudiante', icono: '🎓 ', clase: 'text-infoText font-medium', test: (a) => a.toLowerCase().includes('estudiante') },
   { id: 'seguimiento', label: '📋 Seguimiento', icono: '📋 ', clase: 'text-warningText font-medium', test: (a) => a.toLowerCase().includes('seguimiento') },

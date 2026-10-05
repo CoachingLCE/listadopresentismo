@@ -62,7 +62,7 @@ export default function VersionBadge() {
                   </p>
                   <ul className="space-y-1">
                     {e.cambios.map((c, i) => (
-                      <li key={i} className="text-textSec text-xs flex gap-2"><span className="text-accentPurple">•</span><span>{c}</span></li>
+                      <li key={i} className="text-textSec text-xs flex gap-2"><span className="text-accentPurpleTxt">•</span><span>{c}</span></li>
                     ))}
                   </ul>
                 </div>
