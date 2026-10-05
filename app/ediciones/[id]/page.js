@@ -262,7 +262,7 @@ export default function EdicionDetallePage() {
 
   return (
     <div className="max-w-[1300px] mx-auto px-6 pb-24 pt-10">
-      <Link href="/ediciones" className="text-textMuted text-xs underline">← Volver a ediciones</Link>
+      <Link href="/ediciones" className="text-textMuted text-xs underline"> Volver a ediciones</Link>
       <div className="flex items-center gap-2 mt-1.5 flex-wrap">
         <span className={`text-[12px] px-1.5 py-0.5 rounded-full font-semibold ${color.badge}`}>{nombreCurso(edicion.curso)}</span>
         <h1 className="text-xl">Edición {edicion.numero}</h1>
@@ -311,7 +311,7 @@ export default function EdicionDetallePage() {
 
       {gestion && (
         <details className="bg-surface2 border border-border rounded-2xl p-4 mb-6">
-          <summary className="text-sm font-semibold cursor-pointer">➕ Cargar estudiantes (pegar lista, uno por línea)</summary>
+          <summary className="text-sm font-semibold cursor-pointer"> Cargar estudiantes (pegar lista, uno por línea)</summary>
           <form onSubmit={cargarEstudiantesBulk} className="mt-3 flex flex-col gap-2.5">
             <textarea value={textoBulk} onChange={(e) => setTextoBulk(e.target.value)} rows={6} placeholder={'Juan Pérez\nMaría García\n…'} className={inputCls} />
             <button type="submit" disabled={cargandoBulk} className={`${btnCls} self-start`}>{cargandoBulk ? 'Cargando…' : 'Cargar estudiantes'}</button>

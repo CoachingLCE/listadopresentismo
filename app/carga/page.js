@@ -99,7 +99,7 @@ export default function CargaPage() {
       <div className="flex items-center gap-2.5 flex-wrap mb-1">
         <h1 className="text-xl">Cargar asistencia</h1>
         {guardadoOk && (
-          <span className="text-[12px] text-successText bg-successBg rounded-full px-2 py-0.5 font-semibold">✓ Asistencia guardada</span>
+          <span className="text-[12px] text-successText bg-successBg rounded-full px-2 py-0.5 font-semibold"> Asistencia guardada</span>
         )}
       </div>
       <p className="text-textSec text-sm mb-5">Elegí la edición y la clase, y marcá a cada estudiante.</p>
@@ -136,7 +136,7 @@ export default function CargaPage() {
               className="flex items-center justify-between gap-3 bg-surface2/60 border border-border rounded-xl px-3.5 py-2.5 mb-5 hover:border-accentTeal/50 transition-colors group"
             >
               <div>
-                <p className="text-xs text-textSec font-medium">📊 Información de la edición</p>
+                <p className="text-xs text-textSec font-medium"> Información de la edición</p>
                 <p className="text-[12px] text-textMuted">Consultá el seguimiento y los indicadores de esta edición.</p>
               </div>
               <span className="text-[12px] text-accentTeal font-medium whitespace-nowrap shrink-0">Ver información →</span>

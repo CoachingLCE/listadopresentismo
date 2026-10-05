@@ -194,7 +194,7 @@ function SeguimientoContenido() {
 
       {!estudianteId ? (
         <div className="bg-surface2 border border-border rounded-2xl p-5 mb-6" data-tour="seguimiento-form">
-          <h2 className="text-sm font-semibold mb-1">➕ Nuevo registro</h2>
+          <h2 className="text-sm font-semibold mb-1"> Nuevo registro</h2>
           <p className="text-textSec text-xs mb-3">Primero elegí de qué estudiante cargado es el registro.</p>
           <input
             value={busquedaEst} onChange={(e) => setBusquedaEst(e.target.value)}
@@ -223,7 +223,7 @@ function SeguimientoContenido() {
         </div>
       ) : (
         <form onSubmit={crear} className="bg-surface2 border border-border rounded-2xl p-5 mb-6 flex flex-col gap-2.5" data-tour="seguimiento-form">
-          <h2 className="text-sm font-semibold mb-1">➕ Nuevo registro</h2>
+          <h2 className="text-sm font-semibold mb-1"> Nuevo registro</h2>
           <div className="grid grid-cols-2 gap-2.5">
             <div>
               <label className="text-xs text-textSec block mb-1">Registrado por</label>

@@ -108,7 +108,7 @@ export default function AccesosPage() {
       {mensaje && <p className="text-successText text-sm mb-3">{mensaje}</p>}
 
       <div className="bg-surface2 border border-border rounded-2xl p-5 mb-6" data-tour="accesos-nuevo">
-        <h2 className="text-sm font-semibold mb-3">➕ Nuevo usuario</h2>
+        <h2 className="text-sm font-semibold mb-3"> Nuevo usuario</h2>
         <form onSubmit={crear} className="grid grid-cols-2 gap-2.5">
           <div>
             <label className="text-xs text-textSec block mb-1">Email</label>
@@ -220,7 +220,7 @@ function FilaUsuario({ u, puedeEditar, onActualizar }) {
     setGuardandoRol(false);
     setAvisoRol(
       resultado.ok
-        ? { ok: true, texto: '✓ Rol guardado' }
+        ? { ok: true, texto: ' Rol guardado' }
         : { ok: false, texto: resultado.error || 'No se pudo guardar.' }
     );
   }
@@ -270,7 +270,7 @@ function FilaUsuario({ u, puedeEditar, onActualizar }) {
                 title={verPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
                 className="absolute right-1.5 top-1/2 -translate-y-1/2 text-textMuted hover:text-text text-xs leading-none"
               >
-                {verPassword ? '🙈' : '👁'}
+                {verPassword ? '' : ''}
               </button>
             </div>
             {nuevaPassword.length > 0 && nuevaPassword.length < 8 && (

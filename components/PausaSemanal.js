@@ -10,13 +10,13 @@ const LINK_BLOG = 'https://coachingeducativolider.com/blog';
 
 // Index 0-6 = Date.getDay() (0 = domingo).
 const MENSAJES = [
-  { titulo: '✨ Prepará la semana con una buena idea', texto: 'Antes de empezar una nueva semana, podés tomarte unos minutos para leer, reflexionar y seguir aprendiendo.' },
-  { titulo: '☕ Empezá la semana con una pausa', texto: 'Después de cargar las asistencias, regalate unos minutos para leer y empezar la semana con una nueva idea.' },
-  { titulo: '🌱 Una pausa también puede ser aprendizaje', texto: 'Ya cargaste las asistencias. Ahora, ¿qué tal si te tomás un café y descubrís algo nuevo?' },
-  { titulo: '☕ Mitad de semana, momento para parar', texto: 'Entre una tarea y otra, hacé una pequeña pausa. Tenemos una nota para compartir con vos.' },
-  { titulo: '💡 Una idea puede cambiar una mirada', texto: 'Después de registrar las asistencias, hacé una pausa y explorá una nueva perspectiva en nuestro blog.' },
-  { titulo: '☕ Cerrá la semana con algo para llevarte', texto: 'Terminá de cargar las asistencias, preparate un café y dedicá unos minutos a seguir aprendiendo.' },
-  { titulo: '🌿 Un momento para vos y para aprender', texto: 'Terminá de cargar las asistencias, preparate un mate y dedicá unos minutos a seguir aprendiendo.' }
+  { titulo: ' Prepará la semana con una buena idea', texto: 'Antes de empezar una nueva semana, podés tomarte unos minutos para leer, reflexionar y seguir aprendiendo.' },
+  { titulo: ' Empezá la semana con una pausa', texto: 'Después de cargar las asistencias, regalate unos minutos para leer y empezar la semana con una nueva idea.' },
+  { titulo: ' Una pausa también puede ser aprendizaje', texto: 'Ya cargaste las asistencias. Ahora, ¿qué tal si te tomás un café y descubrís algo nuevo?' },
+  { titulo: ' Mitad de semana, momento para parar', texto: 'Entre una tarea y otra, hacé una pequeña pausa. Tenemos una nota para compartir con vos.' },
+  { titulo: ' Una idea puede cambiar una mirada', texto: 'Después de registrar las asistencias, hacé una pausa y explorá una nueva perspectiva en nuestro blog.' },
+  { titulo: ' Cerrá la semana con algo para llevarte', texto: 'Terminá de cargar las asistencias, preparate un café y dedicá unos minutos a seguir aprendiendo.' },
+  { titulo: ' Un momento para vos y para aprender', texto: 'Terminá de cargar las asistencias, preparate un mate y dedicá unos minutos a seguir aprendiendo.' }
 ];
 
 export default function PausaSemanal() {

@@ -286,7 +286,7 @@ export default function ReportesPage() {
                 {chipsActivos.map((chip) => (
                   <span key={`${chip.tipo}-${chip.valor}`} className="text-[12px] bg-bg border border-border rounded-full pl-2.5 pr-1.5 py-1 flex items-center gap-1.5">
                     {chip.label}
-                    <button onClick={() => quitarChip(chip)} className="text-textMuted hover:text-dangerText">✕</button>
+                    <button onClick={() => quitarChip(chip)} className="text-textMuted hover:text-dangerText"></button>
                   </span>
                 ))}
               </div>
@@ -296,7 +296,7 @@ export default function ReportesPage() {
           {/* ---------- Alertas (subdued) ---------- */}
           {alertasVisibles.length > 0 && (
             <div className="bg-surface2 border border-border border-l-[3px] border-l-warningText rounded-2xl p-4 mb-5">
-              <h2 className="text-xs font-semibold mb-2 text-textSec">⚠ Alertas automáticas ({alertasVisibles.length})</h2>
+              <h2 className="text-xs font-semibold mb-2 text-textSec"> Alertas automáticas ({alertasVisibles.length})</h2>
               <div className="flex flex-col gap-1.5">
                 {alertasVisibles.map((a, i) => (
                   <div key={i} className="text-xs bg-bg border border-border rounded-lg px-3 py-2">

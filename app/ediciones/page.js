@@ -141,7 +141,7 @@ export default function EdicionesPage() {
               className="bg-transparent text-textSec border border-border rounded-lg px-3 py-2 text-sm font-semibold disabled:opacity-50"
               title="Crea una edición de Coaching Ontológico con 10 estudiantes de prueba y presentismo ya cargado, para ver cómo se ve la app con datos."
             >
-              {cargandoEjemplo ? 'Creando…' : '🧪 Cargar edición de ejemplo'}
+              {cargandoEjemplo ? 'Creando…' : ' Cargar edición de ejemplo'}
             </button>
             <Link href="/nueva-edicion" data-tour="ediciones-nueva" className="bg-gradient-to-r from-accentPurple to-accentMagenta text-white rounded-lg px-4 py-2 text-sm font-semibold h-fit">
               + Nueva edición
@@ -249,7 +249,7 @@ export default function EdicionesPage() {
                       title="Borrar edición (SuperAdmin)"
                       className="text-textMuted hover:text-dangerText transition-colors text-sm disabled:opacity-50"
                     >
-                      {borrandoId === e.id ? '…' : '🗑'}
+                      {borrandoId === e.id ? '…' : ''}
                     </button>
                   )}
                   <span className="text-xs text-accentTeal font-medium opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">Ver edición →</span>

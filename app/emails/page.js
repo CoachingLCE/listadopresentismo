@@ -26,8 +26,8 @@ function ModalVerMail({ mail, onClose }) {
       <div className="bg-surface2 border border-border rounded-2xl w-full max-w-3xl h-[94vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
         <div className="p-4 sm:p-5 border-b border-border shrink-0">
           <div className="flex items-start justify-between gap-3 mb-2">
-            <p className="text-sm font-bold">✉️ {mail.tipo}</p>
-            <button onClick={onClose} className="text-textMuted hover:text-text text-sm">✕</button>
+            <p className="text-sm font-bold"> {mail.tipo}</p>
+            <button onClick={onClose} className="text-textMuted hover:text-text text-sm"></button>
           </div>
           <div className="text-xs text-textSec flex flex-wrap gap-x-4 gap-y-0.5">
             <p><span className="text-textMuted">De:</span> {mail.remitente}</p>
@@ -103,7 +103,7 @@ export default function EmailsPage() {
         <>
           {!datos.configurado ? (
             <div className="bg-warningBg/40 border border-warningText/30 rounded-2xl p-4 mb-6">
-              <p className="text-sm font-semibold text-warningText mb-1">✉ El envío automático todavía no está activo</p>
+              <p className="text-sm font-semibold text-warningText mb-1"> El envío automático todavía no está activo</p>
               <p className="text-xs text-textSec">
                 Lo que ves abajo es una vista previa — así van a quedar los mails el día que se manden, pero por
                 ahora no sale ninguno. Para prenderlo hace falta cargar <code className="text-[12px]">GMAIL_USER</code>,{' '}
@@ -114,7 +114,7 @@ export default function EmailsPage() {
             </div>
           ) : (
             <div className="bg-successBg/40 border border-successText/30 rounded-2xl p-4 mb-6">
-              <p className="text-sm font-semibold text-successText">✓ El envío automático está configurado</p>
+              <p className="text-sm font-semibold text-successText"> El envío automático está configurado</p>
               <p className="text-xs text-textSec mt-1">Los viernes a la mañana se revisa esto solo y, si hay alertas nuevas de la semana, se manda un mail — no hace falta hacer nada acá.</p>
             </div>
           )}
@@ -198,7 +198,7 @@ export default function EmailsPage() {
               <p className="text-sm font-semibold">Registro de envíos <span className="text-textMuted font-normal">({registro.length})</span></p>
               <input
                 value={busquedaRegistro} onChange={(e) => setBusquedaRegistro(e.target.value)}
-                placeholder="🔎 Buscar…" type="search" autoComplete="off"
+                placeholder=" Buscar…" type="search" autoComplete="off"
                 className="bg-surface2 border border-border rounded-lg px-3 py-1.5 text-xs w-56 focus:outline-none focus:border-accentTeal"
               />
             </div>

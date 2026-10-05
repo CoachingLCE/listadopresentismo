@@ -176,7 +176,7 @@ export default function Nav() {
               className="h-8 bg-surface2 border border-border rounded-lg px-2 text-xs text-textSec max-w-[160px]"
               title="Previsualizar la app como otra persona (solo lectura)"
             >
-              <option value="">👁 Ver como…</option>
+              <option value="">Ver como…</option>
               {personas.map((p) => (
                 <option key={p.email} value={p.email}>{p.nombre} ({p.roles.join(', ')})</option>
               ))}
@@ -196,7 +196,7 @@ export default function Nav() {
       </div>
 
       <div className="order-4 md:order-2 animacion-iluminar bg-gradient-to-br from-accentPurple/10 to-accentTeal/5 border border-accentPurple/20 rounded-2xl px-4 py-3 mb-4 flex items-start gap-3">
-        <span className="w-8 h-8 rounded-full bg-gradient-to-br from-accentPurple to-accentMagenta flex items-center justify-center text-white text-sm shrink-0">🧭</span>
+        <span className="w-8 h-8 rounded-full bg-gradient-to-br from-accentPurple to-accentMagenta flex items-center justify-center text-white text-sm shrink-0"></span>
         <div>
           <p className="text-[13px] font-semibold text-text">Acompañamos, observamos e intervenimos.</p>
           <p className="text-[12px] text-textSec leading-snug mt-0.5">
@@ -213,7 +213,7 @@ export default function Nav() {
 
       {verComo && (
         <div className="order-2 md:order-4 bg-gradient-to-r from-accentPurple to-accentMagenta text-white text-xs font-semibold rounded-lg px-3.5 py-2 mb-3 flex items-center justify-between gap-2 flex-wrap">
-          <span>👁 Viendo como: {verComo.nombre} ({verComo.roles.join(', ')}) — modo solo lectura, no se guarda nada.</span>
+          <span> Viendo como: {verComo.nombre} ({verComo.roles.join(', ')}) — modo solo lectura, no se guarda nada.</span>
           <button onClick={salirVerComo} className="underline shrink-0">Salir del modo vista</button>
         </div>
       )}

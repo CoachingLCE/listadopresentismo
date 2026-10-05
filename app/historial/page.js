@@ -26,13 +26,13 @@ function colorPorUsuario(nombre) {
 // Categoriza cada acción del historial (ver los `registrarAccion(...)` de la app) — se usa
 // tanto para los chips de filtro como para el color/ícono de cada fila.
 const CATEGORIAS_ACCION = [
-  { id: 'edicion', label: '📚 Edición', icono: '📚 ', clase: 'text-accentPurpleTxt font-semibold', test: (a) => a.toLowerCase().includes('edición') },
-  { id: 'docente', label: '👨‍🏫 Docente', icono: '👨‍🏫 ', clase: 'text-accentTeal font-medium', test: (a) => a.toLowerCase().includes('docente') },
-  { id: 'estudiante', label: '🎓 Estudiante', icono: '🎓 ', clase: 'text-infoText font-medium', test: (a) => a.toLowerCase().includes('estudiante') },
-  { id: 'seguimiento', label: '📋 Seguimiento', icono: '📋 ', clase: 'text-warningText font-medium', test: (a) => a.toLowerCase().includes('seguimiento') },
-  { id: 'usuario', label: '👤 Usuario', icono: '👤 ', clase: 'text-accentMagenta font-medium', test: (a) => a.toLowerCase().includes('usuario') },
-  { id: 'login', label: '🔑 Ingreso', icono: '🔑 ', clase: 'text-successText font-medium', test: (a) => ['inició sesión', 'asignó su primera contraseña', 'cambió su contraseña'].includes(a.toLowerCase()) },
-  { id: 'loginFallido', label: '⚠️ Intento fallido', icono: '⚠️ ', clase: 'text-dangerText font-semibold', test: (a) => a.toLowerCase().includes('rechazado') || a.toLowerCase().includes('fallido') }
+  { id: 'edicion', label: ' Edición', icono: ' ', clase: 'text-accentPurpleTxt font-semibold', test: (a) => a.toLowerCase().includes('edición') },
+  { id: 'docente', label: ' Docente', icono: ' ', clase: 'text-accentTeal font-medium', test: (a) => a.toLowerCase().includes('docente') },
+  { id: 'estudiante', label: ' Estudiante', icono: ' ', clase: 'text-infoText font-medium', test: (a) => a.toLowerCase().includes('estudiante') },
+  { id: 'seguimiento', label: ' Seguimiento', icono: ' ', clase: 'text-warningText font-medium', test: (a) => a.toLowerCase().includes('seguimiento') },
+  { id: 'usuario', label: ' Usuario', icono: ' ', clase: 'text-accentMagenta font-medium', test: (a) => a.toLowerCase().includes('usuario') },
+  { id: 'login', label: ' Ingreso', icono: ' ', clase: 'text-successText font-medium', test: (a) => ['inició sesión', 'asignó su primera contraseña', 'cambió su contraseña'].includes(a.toLowerCase()) },
+  { id: 'loginFallido', label: ' Intento fallido', icono: ' ', clase: 'text-dangerText font-semibold', test: (a) => a.toLowerCase().includes('rechazado') || a.toLowerCase().includes('fallido') }
 ];
 function categoriaAccion(accion) {
   const a = accion || '';
@@ -140,12 +140,12 @@ export default function HistorialPage() {
           <label className="text-xs text-textSec block mb-1">Buscar</label>
           <input
             value={busqueda} onChange={(e) => setBusqueda(e.target.value)}
-            placeholder="🔍 Nombre, acción o detalle…"
+            placeholder=" Nombre, acción o detalle…"
             className={`${filtroCls} w-64`}
           />
         </div>
         <button onClick={exportarExcel} className="bg-surface2 border border-border rounded-lg px-4 py-2 text-sm hover:border-accentTeal transition-colors">
-          ⬇ Exportar a Excel
+           Exportar a Excel
         </button>
       </div>
 

@@ -6,7 +6,7 @@ import { tienePermisoGestionAcademica, tienePermisoGestionRosterDocentes } from 
 import { CURSOS, colorCurso } from '../../lib/cursosLogic';
 
 const ROLES_ROSTER = ['Docente', 'Staff'];
-const ROL_ICONO = { Docente: '🎓', Staff: '🧩' };
+const ROL_ICONO = { Docente: '', Staff: '' };
 const ROL_BADGE = { Docente: 'bg-infoBg text-infoText', Staff: 'bg-warningBg text-warningText' };
 
 const inputCls = 'w-full bg-bg border border-border rounded-lg px-3 py-2.5 text-sm transition-colors focus:outline-none focus:border-accentTeal focus:ring-2 focus:ring-accentTeal/20 placeholder:text-textMuted';
@@ -350,7 +350,7 @@ export default function DocentesPage() {
             <div className="flex items-center gap-2.5 mb-5">
               <span className="w-8 h-8 rounded-full bg-gradient-to-br from-accentPurple to-accentMagenta flex items-center justify-center text-white text-sm font-bold shrink-0">+</span>
               <h2 className="text-sm font-semibold flex-1">Agregar docente al listado</h2>
-              <button onClick={() => setDrawerAbierto(false)} className="text-textMuted hover:text-text text-lg leading-none" title="Cerrar">✕</button>
+              <button onClick={() => setDrawerAbierto(false)} className="text-textMuted hover:text-text text-lg leading-none" title="Cerrar"></button>
             </div>
             <form onSubmit={agregar} className="flex flex-col gap-4">
               <div>
@@ -360,7 +360,7 @@ export default function DocentesPage() {
                   className={nombreDuplicado ? inputCls.replace('border-border', 'border-warningText') : inputCls}
                 />
                 {nombreDuplicado && (
-                  <p className="text-warningText text-[12px] mt-1">⚠ Ya existe alguien con ese nombre en el listado — duplicado.</p>
+                  <p className="text-warningText text-[12px] mt-1"> Ya existe alguien con ese nombre en el listado — duplicado.</p>
                 )}
               </div>
               <div>
@@ -538,7 +538,7 @@ function FilaDocente({ d, puedeRoster, onActualizar, tieneAcceso, onCrearAcceso 
                         title={verPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
                         className="absolute right-1.5 top-1/2 -translate-y-1/2 text-textMuted hover:text-text text-xs leading-none"
                       >
-                        {verPassword ? '🙈' : '👁'}
+                        {verPassword ? '' : ''}
                       </button>
                     </div>
                     <button
@@ -568,7 +568,7 @@ function FilaDocente({ d, puedeRoster, onActualizar, tieneAcceso, onCrearAcceso 
                     >
                       {guardando ? 'Guardando…' : 'Guardar cambios'}
                     </button>
-                    {guardadoOk && <span className="text-successText text-xs font-medium">✓ Guardado</span>}
+                    {guardadoOk && <span className="text-successText text-xs font-medium"> Guardado</span>}
                     {huboCambios && !guardando && !guardadoOk && <span className="text-textMuted text-xs">Hay cambios sin guardar</span>}
                   </div>
                   <button className={btnDangerCls} onClick={() => onActualizar(d.email, { activo: false })}>
