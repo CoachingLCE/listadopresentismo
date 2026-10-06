@@ -54,7 +54,7 @@ export default function EstudiantesPage() {
       {cargandoLista ? (
         <p className="text-textSec text-sm">Cargando…</p>
       ) : estudiantes.length === 0 ? (
-        <p className="text-textMuted text-sm">No se encontraron estudiantes.</p>
+        <p className="vacio">No se encontraron estudiantes.</p>
       ) : (
         <div className="flex flex-col gap-2">
           {estudiantes.map((es) => (

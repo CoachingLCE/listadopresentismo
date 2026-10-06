@@ -321,7 +321,7 @@ export default function EdicionDetallePage() {
 
       {/* ---------- Listado de Presentismo ---------- */}
       {estudiantes.length === 0 ? (
-        <p className="text-textMuted text-sm">Todavía no hay estudiantes cargados en esta edición.</p>
+        <p className="vacio">Todavía no hay estudiantes cargados en esta edición.</p>
       ) : (
         <div className="mb-10">
           <div className="flex items-center justify-between flex-wrap gap-3 mb-3">
@@ -363,7 +363,7 @@ export default function EdicionDetallePage() {
           </div>
 
           {estudiantesFiltrados.length === 0 ? (
-            <p className="text-textMuted text-sm bg-surface2 border border-border rounded-xl p-4">No hay estudiantes que coincidan con la búsqueda o el filtro elegido.</p>
+            <p className="vacio">No hay estudiantes que coincidan con la búsqueda o el filtro elegido.</p>
           ) : (
           <div className="overflow-x-auto border border-border rounded-2xl">
             <table className="border-collapse text-xs w-full">
@@ -489,7 +489,7 @@ export default function EdicionDetallePage() {
 
           {dashboardAbierto && (!hayAsistenciaCargada ? (
             <div className="text-center py-8 bg-bg border border-dashed border-border rounded-xl">
-              <p className="text-sm font-medium text-textSec mb-1">Todavía no hay registros de asistencia</p>
+              <p className="vacio mb-1">Todavía no hay registros de asistencia</p>
               <p className="text-xs text-textMuted">Cuando se carguen asistencias, vas a poder ver las métricas y evolución acá.</p>
             </div>
           ) : (

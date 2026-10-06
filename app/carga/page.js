@@ -99,7 +99,7 @@ export default function CargaPage() {
       <div className="flex items-center gap-2.5 flex-wrap mb-1">
         <h1 className="text-xl">Cargar asistencia</h1>
         {guardadoOk && (
-          <span className="text-[12px] text-successText bg-successBg rounded-full px-2 py-0.5 font-semibold"> Asistencia guardada</span>
+          <span className="etiqueta text-[12px] text-successText bg-successBg"> Asistencia guardada</span>
         )}
       </div>
       <p className="text-textSec text-sm mb-5">Elegí la edición y la clase, y marcá a cada estudiante.</p>
@@ -147,7 +147,7 @@ export default function CargaPage() {
             <p className="text-textSec text-sm">Cargando estudiantes…</p>
           ) : detalle && claseActual && (
             estudiantesActivos.length === 0 ? (
-              <p className="text-textMuted text-sm">No hay estudiantes cargados en esta edición.</p>
+              <p className="vacio">No hay estudiantes cargados en esta edición.</p>
             ) : (
               <div className="flex flex-col gap-2">
                 {estudiantesActivos.map((est) => {

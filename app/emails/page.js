@@ -162,7 +162,7 @@ export default function EmailsPage() {
                       <td className="px-3 py-3 text-xs text-textSec whitespace-nowrap">Instituto ILCE</td>
                       <td className="px-3 py-3 text-xs">{datos.vistaPrevia?.asunto || <span className="text-textMuted">— (sin alertas para armar un ejemplo)</span>}</td>
                       <td className="px-3 py-3">
-                        <span className="text-[12px] px-2 py-0.5 rounded-full font-semibold bg-infoBg text-infoText whitespace-nowrap">Resumen de alertas</span>
+                        <span className="etiqueta text-[12px] bg-infoBg text-infoText whitespace-nowrap">Resumen de alertas</span>
                       </td>
                       <td className="px-3 py-3 text-right">
                         {datos.vistaPrevia && (
@@ -203,7 +203,7 @@ export default function EmailsPage() {
               />
             </div>
             {registro.length === 0 ? (
-              <p className="text-textMuted text-sm bg-surface2 border border-border rounded-xl p-4">Todavía no se mandó ningún mail.</p>
+              <p className="vacio">Todavía no se mandó ningún mail.</p>
             ) : registroFiltrado.length === 0 ? (
               <p className="text-textMuted text-sm bg-surface2 border border-border rounded-xl p-4">Nada coincide con esa búsqueda.</p>
             ) : (

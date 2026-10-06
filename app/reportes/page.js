@@ -225,7 +225,7 @@ export default function ReportesPage() {
           <div className="h-64 w-full bg-surface2 rounded-2xl" />
         </div>
       ) : filas.length === 0 ? (
-        <p className="text-textMuted text-sm bg-surface2 border border-border rounded-2xl p-5">Todavía no hay ediciones para reportar.</p>
+        <p className="vacio">Todavía no hay ediciones para reportar.</p>
       ) : (
         <>
           {/* ---------- Filtros ---------- */}
@@ -309,7 +309,7 @@ export default function ReportesPage() {
           )}
 
           {filasFiltradas.length === 0 ? (
-            <p className="text-textMuted text-sm bg-surface2 border border-border rounded-2xl p-5">No hay ediciones que coincidan con estos filtros — probá ajustarlos o limpiarlos.</p>
+            <p className="vacio">No hay ediciones que coincidan con estos filtros — probá ajustarlos o limpiarlos.</p>
           ) : (
             <>
               {/* ---------- KPIs ---------- */}

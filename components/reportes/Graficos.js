@@ -32,7 +32,7 @@ export function DistribucionEstados({ resumen }) {
 
   const total = segmentos.reduce((s, seg) => s + seg.valor, 0);
   if (total === 0) {
-    return <p className="text-textMuted text-sm">Todavía no hay registros de asistencia para mostrar la distribución.</p>;
+    return <p className="vacio">Todavía no hay registros de asistencia para mostrar la distribución.</p>;
   }
 
   return (
@@ -68,7 +68,7 @@ export function DistribucionEstados({ resumen }) {
 export function BarraPresentesAusentes({ presentes, ausentes }) {
   const total = presentes + ausentes;
   if (total === 0) {
-    return <p className="text-textMuted text-sm">Todavía no hay presentismo cargado en las ediciones filtradas.</p>;
+    return <p className="vacio">Todavía no hay presentismo cargado en las ediciones filtradas.</p>;
   }
   const pctPresentes = (presentes / total) * 100;
   const pctAusentes = 100 - pctPresentes;
@@ -108,7 +108,7 @@ export function BarrasPorEdicion({ filas }) {
   const conDato = filas.filter((f) => f.resumen.porcentajePresentismo !== null);
 
   if (conDato.length === 0) {
-    return <p className="text-textMuted text-sm">Todavía no hay presentismo cargado en las ediciones filtradas.</p>;
+    return <p className="vacio">Todavía no hay presentismo cargado en las ediciones filtradas.</p>;
   }
 
   return (
@@ -177,7 +177,7 @@ export function LineaEvolucion({ puntos }) {
   }, [puntosValidos]);
 
   if (coords.length === 0) {
-    return <p className="text-textMuted text-sm">Todavía no hay suficientes clases dadas para mostrar una evolución.</p>;
+    return <p className="vacio">Todavía no hay suficientes clases dadas para mostrar una evolución.</p>;
   }
 
   const lineaPath = coords.map((c, i) => `${i === 0 ? 'M' : 'L'}${c.x.toFixed(1)},${c.y.toFixed(1)}`).join(' ');

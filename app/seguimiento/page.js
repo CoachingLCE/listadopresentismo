@@ -206,7 +206,7 @@ function SeguimientoContenido() {
               {buscandoEst ? (
                 <p className="text-textSec text-xs px-1">Buscando…</p>
               ) : resultadosEst.length === 0 ? (
-                <p className="text-textMuted text-xs px-1">No se encontraron estudiantes.</p>
+                <p className="vacio vacio-chico">No se encontraron estudiantes.</p>
               ) : (
                 resultadosEst.map((es) => (
                   <button
@@ -255,7 +255,7 @@ function SeguimientoContenido() {
       {cargandoLista ? (
         <p className="text-textSec text-sm">Cargando…</p>
       ) : seguimientos.length === 0 ? (
-        <p className="text-textMuted text-sm">No hay registros todavía.</p>
+        <p className="vacio">No hay registros todavía.</p>
       ) : (
         <div className="flex flex-col gap-2.5">
           {seguimientos.map((s) => (

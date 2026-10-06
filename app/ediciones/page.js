@@ -212,7 +212,7 @@ export default function EdicionesPage() {
       {cargandoLista ? (
         <p className="text-textSec text-sm">Cargando…</p>
       ) : filtradas.length === 0 ? (
-        <p className="text-textMuted text-sm">No hay ediciones para mostrar.</p>
+        <p className="vacio">No hay ediciones para mostrar.</p>
       ) : (
         <div className="flex flex-col gap-2.5">
           {filtradas.map((e) => {
