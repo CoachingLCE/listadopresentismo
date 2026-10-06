@@ -138,12 +138,12 @@ export default function EdicionesPage() {
           <div className="flex gap-2 flex-wrap h-fit">
             <button
               onClick={cargarEjemplo} disabled={cargandoEjemplo}
-              className="bg-transparent text-textSec border border-border rounded-lg px-3 py-2 text-sm font-semibold disabled:opacity-50"
+              className="boton bg-transparent text-textSec border border-border disabled:opacity-50"
               title="Crea una edición de Coaching Ontológico con 10 estudiantes de prueba y presentismo ya cargado, para ver cómo se ve la app con datos."
             >
               {cargandoEjemplo ? 'Creando…' : ' Cargar edición de ejemplo'}
             </button>
-            <Link href="/nueva-edicion" data-tour="ediciones-nueva" className="bg-gradient-to-r from-accentPurple to-accentMagenta text-white rounded-lg px-4 py-2 text-sm font-semibold h-fit">
+            <Link href="/nueva-edicion" data-tour="ediciones-nueva" className="boton boton-solido bg-gradient-to-r from-accentPurple to-accentMagenta text-white h-fit">
               + Nueva edición
             </Link>
           </div>

@@ -52,7 +52,7 @@ export default function CredencialesZoomPage() {
                   <td className="p-2 font-mono">{c.idReunion || '—'}</td>
                   <td className="p-2">
                     <a href="https://zoom.us/signin" target="_blank" rel="noopener noreferrer"
-                      className="inline-block text-xs font-semibold px-2.5 py-1 rounded-lg bg-accentTeal/10 text-accentTeal hover:bg-accentTeal/20 whitespace-nowrap">
+                      className="boton boton-chico inline-block bg-accentTeal/10 text-accentTeal hover:bg-accentTeal/20 whitespace-nowrap">
                       Abrir ↗
                     </a>
                   </td>

@@ -132,7 +132,7 @@ export default function TourGuiado() {
             <h3 className="text-sm font-semibold mb-1">Te mostramos cómo funciona Presentismo ILCE</h3>
             <p className="text-xs text-textSec mb-3">Vamos a recorrer juntos las principales funciones de la aplicación.</p>
             <button
-              className="w-full bg-gradient-to-r from-accentPurple to-accentMagenta text-white rounded-lg px-3 py-2 text-sm font-semibold mb-3"
+              className="boton boton-solido w-full bg-gradient-to-r from-accentPurple to-accentMagenta text-white mb-3"
               onClick={iniciarCompleto}
             >
               Comenzar recorrido
@@ -142,7 +142,7 @@ export default function TourGuiado() {
               {tareas.map((t) => (
                 <button
                   key={t.id}
-                  className="text-left text-xs text-textSec hover:text-text bg-bg border border-border rounded-lg px-2.5 py-1.5"
+                  className="boton boton-chico text-left text-textSec hover:text-text bg-bg border border-border"
                   onClick={() => iniciarTarea(t)}
                 >
                   {t.label}
@@ -228,9 +228,9 @@ function TourOverlay({ paso, idx, total, rect, buscando, modoTarea, onSiguiente,
           <button className="text-xs text-textMuted" onClick={onSalir}>Salir</button>
           <div className="flex gap-1.5">
             {idx > 0 && !modoTarea && (
-              <button className="bg-transparent text-textSec border border-border rounded-lg px-2.5 py-1.5 text-xs" onClick={onAnterior}> Atrás</button>
+              <button className="boton boton-chico bg-transparent text-textSec border border-border" onClick={onAnterior}> Atrás</button>
             )}
-            <button className="bg-gradient-to-r from-accentPurple to-accentMagenta text-white rounded-lg px-3 py-1.5 text-xs font-semibold" onClick={onSiguiente}>
+            <button className="boton boton-chico boton-solido bg-gradient-to-r from-accentPurple to-accentMagenta text-white" onClick={onSiguiente}>
               {esFinal || modoTarea ? 'Listo' : 'Siguiente →'}
             </button>
           </div>

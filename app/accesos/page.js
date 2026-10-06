@@ -7,8 +7,8 @@ const ROLES_DISPONIBLES = ['SuperAdmin', 'Coordinacion', 'Academico', 'Docente',
 const ROLES_RESERVADOS = ['SuperAdmin'];
 
 const inputCls = 'w-full bg-bg border border-border rounded-lg px-2.5 py-2 text-sm';
-const btnCls = 'bg-gradient-to-r from-accentPurple to-accentMagenta text-white rounded-lg px-4 py-2 text-sm font-semibold';
-const btnSecCls = 'bg-transparent text-textSec border border-border rounded-lg px-3 py-1.5 text-xs';
+const btnCls = 'boton boton-solido bg-gradient-to-r from-accentPurple to-accentMagenta text-white';
+const btnSecCls = 'boton boton-chico bg-transparent text-textSec border border-border';
 
 export default function AccesosPage() {
   const { usuario, cargando, fetchAutenticado } = useSession();

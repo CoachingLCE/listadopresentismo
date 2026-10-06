@@ -144,7 +144,7 @@ export default function HistorialPage() {
             className={`${filtroCls} w-64`}
           />
         </div>
-        <button onClick={exportarExcel} className="bg-surface2 border border-border rounded-lg px-4 py-2 text-sm hover:border-accentTeal transition-colors">
+        <button onClick={exportarExcel} className="boton bg-surface2 border border-border hover:border-accentTeal transition-colors">
            Exportar a Excel
         </button>
       </div>

@@ -12,8 +12,8 @@ const ROL_BADGE = { Docente: 'bg-infoBg text-infoText', Staff: 'bg-warningBg tex
 const inputCls = 'w-full bg-bg border border-border rounded-lg px-3 py-2.5 text-sm transition-colors focus:outline-none focus:border-accentTeal focus:ring-2 focus:ring-accentTeal/20 placeholder:text-textMuted';
 const labelCls = 'text-xs text-textSec font-medium block mb-1.5';
 const btnCls = 'bg-gradient-to-r from-accentPurple to-accentMagenta text-white rounded-lg px-5 py-2.5 text-sm font-semibold shadow-sm shadow-accentPurple/20 transition-transform hover:brightness-110 active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none';
-const btnSecCls = 'bg-surface border border-border rounded-lg px-3 py-1.5 text-xs font-medium text-textSec transition-colors hover:border-accentTeal hover:text-text active:scale-[0.98]';
-const btnDangerCls = 'bg-transparent border border-border rounded-lg px-3 py-1.5 text-xs font-medium text-textMuted transition-colors hover:border-dangerText hover:text-dangerText hover:bg-dangerBg/40 active:scale-[0.98]';
+const btnSecCls = 'boton boton-chico bg-surface border border-border text-textSec transition-colors hover:border-accentTeal hover:text-text active:scale-[0.98]';
+const btnDangerCls = 'boton boton-chico bg-transparent border border-border text-textMuted transition-colors hover:border-dangerText hover:text-dangerText hover:bg-dangerBg/40 active:scale-[0.98]';
 
 // Colores de avatar, elegidos entre los tokens ya definidos en la app (sin agregar
 // paleta nueva) — se asignan por hash del email, así cada persona siempre tiene el mismo.

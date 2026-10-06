@@ -273,7 +273,7 @@ export default function ReportesPage() {
             </div>
             <div className="flex items-center gap-2">
               <button onClick={aplicarFiltros} className="bg-gradient-to-r from-accentPurple to-accentMagenta text-white rounded-lg px-4 py-2 text-xs font-semibold">Aplicar filtros</button>
-              <button onClick={limpiarFiltros} className="bg-transparent text-textSec border border-border rounded-lg px-3 py-2 text-xs">Limpiar filtros</button>
+              <button onClick={limpiarFiltros} className="boton boton-chico bg-transparent text-textSec border border-border">Limpiar filtros</button>
               <button
                 onClick={exportar} disabled={exportando}
                 className="ml-auto text-textMuted text-xs underline hover:text-textSec disabled:opacity-50"

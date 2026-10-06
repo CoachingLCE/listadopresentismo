@@ -24,8 +24,8 @@ function estiloFechaClase(fechaISO, hoyISO) {
 }
 
 const inputCls = 'w-full bg-bg border border-border rounded-lg px-2.5 py-2 text-sm';
-const btnCls = 'bg-gradient-to-r from-accentPurple to-accentMagenta text-white rounded-lg px-4 py-2 text-sm font-semibold disabled:opacity-50';
-const btnSecCls = 'bg-transparent text-textSec border border-border rounded-lg px-3 py-1.5 text-xs';
+const btnCls = 'boton boton-solido bg-gradient-to-r from-accentPurple to-accentMagenta text-white disabled:opacity-50';
+const btnSecCls = 'boton boton-chico bg-transparent text-textSec border border-border';
 
 const ICONO_INDICADOR = {
   totalPresentes: { icono: '🟢', label: 'Presentes', bg: 'bg-successBg', text: 'text-successText' },

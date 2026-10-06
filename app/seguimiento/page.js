@@ -6,7 +6,7 @@ import { tienePermisoVerSeguimiento } from '../../lib/permisos';
 import { MOTIVOS_SEGUIMIENTO, ESTADOS_SEGUIMIENTO } from '../../lib/datosSeguimientoCliente';
 
 const inputCls = 'w-full bg-bg border border-border rounded-lg px-2.5 py-2 text-sm';
-const btnCls = 'bg-gradient-to-r from-accentPurple to-accentMagenta text-white rounded-lg px-4 py-2 text-sm font-semibold disabled:opacity-50';
+const btnCls = 'boton boton-solido bg-gradient-to-r from-accentPurple to-accentMagenta text-white disabled:opacity-50';
 const badgeEstado = {
   Pendiente: 'bg-warningBg text-warningText',
   EnRevision: 'bg-infoBg text-infoText',
