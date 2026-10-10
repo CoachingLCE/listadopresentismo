@@ -164,3 +164,25 @@ div.fixed.inset-0 > div[class*="rounded-2xl"]:not([class*="h-full"]):not([class*
 .boton-chico{padding:6px 12px;font-size:12px;line-height:16px}
 /* Borde transparente: el secundario lleva un borde de 1 px y sin esto el relleno quedaba 2 px más bajo cuando van lado a lado. */
 .boton-solido{font-weight:600;border:1px solid transparent}
+
+/* Tablas (Lote 3 de la auditoría; igual en todas las apps de ILCE). Se activa agregando la clase "tabla" a un <table>: encabezado en
+   mayúsculas chicas y color atenuado, relleno parejo, separadores finos y hover por fila. Con "tabla-tarjetas" y un data-label en
+   cada <td>, en celular cada fila pasa a ser una tarjeta (en vez del scroll de costado). "tabla-fija": encabezado pegado arriba,
+   SOLO para tablas dentro de un contenedor con altura propia (si no, quedaría trabado bajo la barra de la app al hacer scroll). */
+table.tabla{border-collapse:separate;border-spacing:0}
+table.tabla thead th{background:rgb(var(--color-surface2));color:rgb(var(--color-textMuted));font-size:12px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;text-align:left;padding:10px 14px;border-bottom:1px solid rgb(var(--color-border));white-space:nowrap}
+table.tabla tbody td{padding:11px 14px;line-height:1.4;border-bottom:1px solid rgb(var(--color-border));vertical-align:middle}
+table.tabla tbody tr:last-child td{border-bottom:0}
+table.tabla tbody tr:hover td{background:rgb(var(--color-textMuted) / .07)}
+table.tabla .num{text-align:right;font-variant-numeric:tabular-nums}
+table.tabla-fija thead th{position:sticky;top:0;z-index:2}
+@media (max-width:640px){
+  table.tabla-tarjetas thead{display:none}
+  table.tabla-tarjetas,table.tabla-tarjetas tbody{display:block}
+  table.tabla-tarjetas tbody tr{display:block;margin:0 0 10px;padding:6px 14px;border:1px solid rgb(var(--color-border));border-radius:12px;background:rgb(var(--color-surface2))}
+  table.tabla-tarjetas tbody td{display:flex;justify-content:space-between;align-items:baseline;gap:14px;padding:7px 0;border:0;text-align:right}
+  table.tabla-tarjetas tbody td::before{content:attr(data-label);flex:none;color:rgb(var(--color-textMuted));font-size:12px;font-weight:600;text-align:left}
+  table.tabla-tarjetas tbody td[data-label=""]::before{content:none}
+  table.tabla-tarjetas tbody td[data-label=""]{justify-content:flex-end}
+  table.tabla-tarjetas tbody tr:hover td{background:transparent}
+}

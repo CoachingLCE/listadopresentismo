@@ -177,7 +177,7 @@ export default function HistorialPage() {
           <p className="vacio">Sin registros para este filtro.</p>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-sm border-collapse">
+            <table className="w-full text-sm border-collapse tabla tabla-tarjetas">
               <thead>
                 <tr className="text-textSec text-left border-b border-border">
                   <th className="py-2 pr-3 whitespace-nowrap">Fecha</th>
@@ -192,12 +192,12 @@ export default function HistorialPage() {
                   const color = colorPorUsuario(h.usuario);
                   return (
                     <tr key={i} className="border-b border-border">
-                      <td className="py-2 pr-3 whitespace-nowrap text-textMuted text-xs">{new Date(h.fecha).toLocaleString('es-AR', { hour12: false })}</td>
-                      <td className="py-2 pr-3 whitespace-nowrap">
+                      <td data-label="Fecha" className="py-2 pr-3 whitespace-nowrap text-textMuted text-xs">{new Date(h.fecha).toLocaleString('es-AR', { hour12: false })}</td>
+                      <td data-label="Usuario" className="py-2 pr-3 whitespace-nowrap">
                         <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${color.bg} ${color.text}`}>{h.usuario}</span>
                       </td>
-                      <td className={`py-2 pr-3 whitespace-nowrap ${cat?.clase || ''}`}>{cat?.icono}{h.accion}</td>
-                      <td className="py-2 text-textSec leading-snug">{h.detalle}</td>
+                      <td data-label="Acción" className={`py-2 pr-3 whitespace-nowrap ${cat?.clase || ''}`}>{cat?.icono}{h.accion}</td>
+                      <td data-label="Detalle" className="py-2 text-textSec leading-snug">{h.detalle}</td>
                     </tr>
                   );
                 })}

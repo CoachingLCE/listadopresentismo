@@ -127,7 +127,7 @@ export default function EmailsPage() {
             <p className="text-sm font-semibold mb-2.5">Mails automáticos que genera el sistema</p>
             <div className="bg-surface2 border border-border rounded-2xl overflow-hidden">
               <div className="overflow-x-auto">
-                <table className="w-full text-sm">
+                <table className="w-full text-sm tabla tabla-tarjetas">
                   <thead>
                     <tr className="text-left text-textMuted text-xs border-b border-border">
                       <th className="px-4 py-2.5 font-medium">Cuándo se envía</th>
@@ -147,8 +147,8 @@ export default function EmailsPage() {
                         asunto: datos.vistaPrevia.asunto, html: datos.vistaPrevia.html
                       })}
                     >
-                      <td className="px-4 py-3 text-xs">Los viernes 9am (automático), si hay alertas nuevas</td>
-                      <td className="px-3 py-3">
+                      <td data-label="Cuándo se envía" className="px-4 py-3 text-xs">Los viernes 9am (automático), si hay alertas nuevas</td>
+                      <td data-label="A quién" className="px-3 py-3">
                         {datos.destinatarios.length === 0 ? (
                           <span className="text-textMuted text-xs">Nadie configurado todavía</span>
                         ) : (
@@ -159,12 +159,12 @@ export default function EmailsPage() {
                           </div>
                         )}
                       </td>
-                      <td className="px-3 py-3 text-xs text-textSec whitespace-nowrap">Instituto ILCE</td>
-                      <td className="px-3 py-3 text-xs">{datos.vistaPrevia?.asunto || <span className="text-textMuted">— (sin alertas para armar un ejemplo)</span>}</td>
-                      <td className="px-3 py-3">
+                      <td data-label="De" className="px-3 py-3 text-xs text-textSec whitespace-nowrap">Instituto ILCE</td>
+                      <td data-label="Asunto" className="px-3 py-3 text-xs">{datos.vistaPrevia?.asunto || <span className="text-textMuted">— (sin alertas para armar un ejemplo)</span>}</td>
+                      <td data-label="Tipo" className="px-3 py-3">
                         <span className="etiqueta text-[12px] bg-infoBg text-infoText whitespace-nowrap">Resumen de alertas</span>
                       </td>
-                      <td className="px-3 py-3 text-right">
+                      <td data-label="" className="px-3 py-3 text-right">
                         {datos.vistaPrevia && (
                           <button
                             type="button"
@@ -209,7 +209,7 @@ export default function EmailsPage() {
             ) : (
               <div className="bg-surface2 border border-border rounded-2xl overflow-hidden">
                 <div className="overflow-x-auto max-h-[500px] overflow-y-auto">
-                  <table className="w-full text-sm">
+                  <table className="w-full text-sm tabla tabla-tarjetas tabla-fija">
                     <thead className="sticky top-0 bg-surface2 z-10">
                       <tr className="text-left text-textMuted text-xs border-b border-border">
                         <th className="px-4 py-2.5 font-medium whitespace-nowrap">Fecha</th>
@@ -222,11 +222,11 @@ export default function EmailsPage() {
                     <tbody>
                       {registroFiltrado.map((r) => (
                         <tr key={r.id} className="border-b border-border last:border-0">
-                          <td className="px-4 py-2.5 text-xs text-textSec whitespace-nowrap">{formatearFecha(r.fecha)}</td>
-                          <td className="px-3 py-2.5 text-xs">{r.asunto || '(sin asunto)'}</td>
-                          <td className="px-3 py-2.5 text-xs text-textSec">{r.destinatarios.join(', ') || '—'}</td>
-                          <td className="px-3 py-2.5 text-xs text-textSec">{r.cantidadAlertas !== '' ? r.cantidadAlertas : '—'}</td>
-                          <td className="px-3 py-2.5 text-right">
+                          <td data-label="Fecha" className="px-4 py-2.5 text-xs text-textSec whitespace-nowrap">{formatearFecha(r.fecha)}</td>
+                          <td data-label="Asunto" className="px-3 py-2.5 text-xs">{r.asunto || '(sin asunto)'}</td>
+                          <td data-label="Destinatarios" className="px-3 py-2.5 text-xs text-textSec">{r.destinatarios.join(', ') || '—'}</td>
+                          <td data-label="Alertas" className="px-3 py-2.5 text-xs text-textSec">{r.cantidadAlertas !== '' ? r.cantidadAlertas : '—'}</td>
+                          <td data-label="" className="px-3 py-2.5 text-right">
                             <button
                               type="button"
                               onClick={() => setMailAVer({
