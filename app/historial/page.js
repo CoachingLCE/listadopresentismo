@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from '../../lib/useSession';
 import { tienePermisoVerHistorial } from '../../lib/permisos';
+import { etiquetaMes, siguienteMes } from '../../lib/historialMeses';
 
 // Colores distintos por persona, para reconocerla rápido en la lista sin leer el nombre —
 // el mismo nombre siempre cae en el mismo color (hash simple sobre una paleta fija). Mismo
@@ -53,6 +54,12 @@ export default function HistorialPage() {
   const [hasta, setHasta] = useState('');
   const [busqueda, setBusqueda] = useState('');
   const [filtroCategoria, setFiltroCategoria] = useState('');
+  // Historial mes a mes: se carga el mes actual y "Ver más" abre el anterior. Con filtros o una búsqueda se mira TODO (de cualquier mes).
+  const [meses, setMeses] = useState([]);                 // [{ mes: '2026-10', n: 120 }] meses con movimientos
+  const [mesesCargados, setMesesCargados] = useState([]);
+  const [cargandoMas, setCargandoMas] = useState(false);
+  const [usuariosLista, setUsuariosLista] = useState([]);
+  const modoTodo = !!(filtroUsuario || filtroCategoria || desde || hasta || busqueda.trim());
 
   const puede = usuario ? tienePermisoVerHistorial(usuario) : false;
 
@@ -62,21 +69,37 @@ export default function HistorialPage() {
 
   useEffect(() => {
     if (usuario && puede) cargar();
-  }, [usuario]);
+  }, [usuario, modoTodo]);
 
   async function cargar() {
     setCargandoLista(true);
     setError('');
     try {
-      const res = await fetchAutenticado('/api/historial');
+      const res = await fetchAutenticado(modoTodo ? '/api/historial?todo=1' : '/api/historial');
       const data = await res.json();
       if (!res.ok) { setError(data.error || 'No se pudo cargar el historial.'); return; }
       setHistorial(data.historial);
+      setMeses(data.meses || []); setMesesCargados(data.mes ? [data.mes] : []); setUsuariosLista(data.usuarios || []);
     } catch {
       setError('Error de conexión.');
     } finally {
       setCargandoLista(false);
     }
+  }
+
+  async function verMas() {
+    const sig = siguienteMes(meses, mesesCargados);
+    if (!sig || cargandoMas) return;
+    setCargandoMas(true);
+    try {
+      const res = await fetchAutenticado(`/api/historial?mes=${encodeURIComponent(sig.mes)}`);
+      const data = await res.json();
+      if (res.ok && !data.error) {
+        setHistorial((prev) => [...prev, ...(data.historial || [])]);
+        setMesesCargados((prev) => [...prev, sig.mes]);
+      } else setError(data.error || 'No se pudo cargar el mes anterior.');
+    } catch { setError('Error de conexión.'); }
+    setCargandoMas(false);
   }
 
   async function exportarExcel() {
@@ -94,7 +117,7 @@ export default function HistorialPage() {
     XLSX.writeFile(libro, `historial-presentismo-${new Date().toISOString().slice(0, 10)}.xlsx`);
   }
 
-  const usuariosUnicos = useMemo(() => [...new Set(historial.map((h) => h.usuario))].sort(), [historial]);
+  const usuariosUnicos = useMemo(() => (usuariosLista.length ? usuariosLista : [...new Set(historial.map((h) => h.usuario))].sort()), [usuariosLista, historial]);
 
   const registrosFiltrados = useMemo(() => {
     return historial.filter((h) => {
@@ -205,6 +228,25 @@ export default function HistorialPage() {
             </table>
           </div>
         )}
+        {!error && !cargandoLista && (() => {
+          const sig = modoTodo ? null : siguienteMes(meses, mesesCargados);
+          return (
+            <div className="flex flex-col items-center gap-2 mt-5" aria-live="polite">
+              {modoTodo ? (
+                <p className="text-textMuted text-[12px]">Mostrando todos los meses, porque hay un filtro o una búsqueda activa.</p>
+              ) : (
+                <>
+                  <p className="text-textMuted text-[12px]">Mostrando {mesesCargados.length ? [...mesesCargados].sort().reverse().map(etiquetaMes).join(', ') : 'el historial'}.</p>
+                  {sig ? (
+                    <button onClick={verMas} disabled={cargandoMas} className="boton bg-surface2 border border-border disabled:opacity-60">
+                      {cargandoMas ? 'Cargando…' : `Ver más · ${etiquetaMes(sig.mes)} (${sig.n})`}
+                    </button>
+                  ) : meses.length > 0 && <p className="text-textMuted text-[12px]">No hay movimientos más antiguos.</p>}
+                </>
+              )}
+            </div>
+          );
+        })()}
       </div>
     </div>
   );
